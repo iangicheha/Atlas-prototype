@@ -1,0 +1,26 @@
+# Smooths TwistStamped commands from /cmd_vel to /diff_drive_controller/cmd_vel.
+# ROS 2 Jazzy diff_drive_controller requires TwistStamped input.
+
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: true
+
+    smoothing_frequency: 20.0   # Hz — smoother output rate
+    scale_velocities: false
+    feedback: "OPEN_LOOP"       # No wheel speed feedback available at this stage
+
+    enable_stamped_cmd_vel: true
+
+    # Velocity limits [vx, vy, wz]  (vy = 0 for differential drive)
+    max_velocity:  [ 0.5,  0.0,  1.9]
+    min_velocity:  [-0.35, 0.0, -1.9]
+
+    # Acceleration / deceleration limits [ax, ay, az]
+    max_accel:     [ 1.0,  0.0,  3.2]
+    max_decel:     [-1.0,  0.0, -3.2]
+
+    # Deadband — no minimum threshold applied
+    deadband_velocity: [0.0, 0.0, 0.0]
+
+    # Timeout: send zero-velocity after this many seconds of no new commands
+    velocity_timeout: 1.0

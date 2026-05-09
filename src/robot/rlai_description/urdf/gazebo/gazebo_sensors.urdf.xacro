@@ -1,0 +1,471 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    Gazebo Harmonic sensor plugins (gz-sim 8.x / SDFormat 1.11).
+
+    Included ONLY when sim_mode == 'gazebo' (robot.urdf.xacro guards the include).
+    Each block is guarded by the same boolean arg used in the sensor xacros so
+    that enabling/disabling a sensor via launch arg is fully consistent.
+
+    Noise values match src/robot/rlai_description/config/sensor_noise.yaml.
+  -->
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       Wheel & caster surface friction + visual materials
+       Combined blocks are defined at the bottom of this file so that
+       friction and material properties live together per link.
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       gz_ros2_control — loads controller_manager inside Gazebo Harmonic.
+       MUST be present for diff_drive_controller / joint_state_broadcaster
+       to start. The plugin reads controllers.yaml via the <parameters> tag.
+       ══════════════════════════════════════════════════════════════════ -->
+  <gazebo>
+    <plugin filename="gz_ros2_control-system"
+            name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find rlai_control)/config/controllers.yaml</parameters>
+      <ros>
+        <remapping>~/robot_description:=/robot_description</remapping>
+      </ros>
+    </plugin>
+  </gazebo>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       2-D LiDAR — RPLIDAR A3 / Hokuyo UST-20LX
+       type: gpu_lidar  |  topic: /scan  |  rate: 15 Hz
+       ══════════════════════════════════════════════════════════════════ -->
+  <xacro:if value="$(arg lidar_2d_enabled)">
+    <gazebo reference="lidar_2d_link">
+      <sensor name="lidar_2d" type="gpu_lidar">
+        <always_on>true</always_on>
+        <update_rate>15</update_rate>
+        <topic>/scan</topic>
+        <gz_frame_id>lidar_2d_link</gz_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>720</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159265</min_angle>
+              <max_angle>3.14159265</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.30</min>
+            <max>25.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.01</stddev>
+          </noise>
+        </lidar>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       3-D LiDAR — Velodyne VLP-16 (16-channel, ±15° vertical FOV)
+       type: gpu_lidar  |  topic: /lidar_3d/points_raw  |  rate: 10 Hz
+       Bridge: gz.msgs.PointCloudPacked → sensor_msgs/msg/PointCloud2
+       ══════════════════════════════════════════════════════════════════ -->
+  <xacro:if value="$(arg lidar_3d_enabled)">
+    <gazebo reference="lidar_3d_link">
+      <sensor name="lidar_3d" type="gpu_lidar">
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+        <topic>/lidar_3d/points_raw</topic>
+        <gz_frame_id>lidar_3d_link</gz_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>1800</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159265</min_angle>
+              <max_angle>3.14159265</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>16</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.26179939</min_angle>  <!-- -15 deg -->
+              <max_angle>0.26179939</max_angle>   <!-- +15 deg -->
+            </vertical>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>100.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.02</stddev>
+          </noise>
+        </lidar>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       IMU — MPU-6050 / ICM-42688 equivalent
+       type: imu  |  topic: /imu/data_raw  |  rate: 200 Hz
+       ══════════════════════════════════════════════════════════════════ -->
+  <xacro:if value="$(arg imu_enabled)">
+    <gazebo reference="imu_link">
+      <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>200</update_rate>
+        <topic>/imu/data_raw</topic>
+        <gz_frame_id>imu_link</gz_frame_id>
+        <imu>
+          <angular_velocity>
+            <x><noise type="gaussian"><mean>0.0</mean><stddev>0.0003394</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0.0</mean><stddev>0.0003394</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0.0</mean><stddev>0.0003394</stddev></noise></z>
+          </angular_velocity>
+          <linear_acceleration>
+            <x><noise type="gaussian"><mean>0.0</mean><stddev>0.004</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0.0</mean><stddev>0.004</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0.0</mean><stddev>0.004</stddev></noise></z>
+          </linear_acceleration>
+        </imu>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       Depth camera — Intel RealSense D435i equivalent
+       Depth stream:  type: depth_camera  |  topic: /depth_camera/depth  |  rate: 30 Hz
+       RGB companion: type: camera        |  topic: /depth_camera/image_raw  |  rate: 30 Hz
+       camera_info:   auto-published at /depth_camera/image_raw/camera_info
+                      (bridged to ROS as /depth_camera/camera_info in ros_gz_bridge.yaml)
+       HFoV: 87° = 1.5184 rad  (D435i spec)
+       ══════════════════════════════════════════════════════════════════ -->
+  <xacro:if value="$(arg depth_camera_enabled)">
+
+    <!-- Depth + RGB sensors + visual material — single reference block so
+         the <visual> material override is not overwritten by a later block -->
+    <gazebo reference="depth_camera_link">
+      <visual>
+        <material>
+          <ambient>0.15 0.16 0.18 1.0</ambient>
+          <diffuse>0.22 0.23 0.26 1.0</diffuse>
+          <specular>0.5 0.5 0.55 1.0</specular>
+        </material>
+      </visual>
+      <sensor name="depth_camera" type="depth_camera">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <topic>/depth_camera/depth</topic>
+        <gz_frame_id>depth_camera_depth_optical_frame</gz_frame_id>
+        <camera name="depth_camera">
+          <horizontal_fov>1.5184</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R_FLOAT32</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>10.0</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.002</stddev>
+          </noise>
+        </camera>
+      </sensor>
+      <sensor name="rgb_camera" type="camera">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <topic>/depth_camera/image_raw</topic>
+        <gz_frame_id>depth_camera_rgb_optical_frame</gz_frame_id>
+        <camera name="rgb_camera">
+          <horizontal_fov>1.5184</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>RGB_INT8</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>100.0</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.003</stddev>
+          </noise>
+        </camera>
+      </sensor>
+    </gazebo>
+
+  </xacro:if>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       GPS / NavSat
+       type: navsat  |  topic: /gps/fix  |  rate: 10 Hz
+       Noise: pos σ = 2.5 m, vel σ = 0.05 m/s  (from sensor_noise.yaml)
+       ══════════════════════════════════════════════════════════════════ -->
+  <xacro:if value="$(arg gps_enabled)">
+    <gazebo reference="gps_link">
+      <sensor name="gps_sensor" type="navsat">
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+        <topic>/gps/fix</topic>
+        <gz_frame_id>gps_link</gz_frame_id>
+        <navsat>
+          <position_sensing>
+            <horizontal>
+              <noise type="gaussian"><mean>0.0</mean><stddev>2.5</stddev></noise>
+            </horizontal>
+            <vertical>
+              <noise type="gaussian"><mean>0.0</mean><stddev>2.5</stddev></noise>
+            </vertical>
+          </position_sensing>
+          <velocity_sensing>
+            <horizontal>
+              <noise type="gaussian"><mean>0.0</mean><stddev>0.05</stddev></noise>
+            </horizontal>
+            <vertical>
+              <noise type="gaussian"><mean>0.0</mean><stddev>0.05</stddev></noise>
+            </vertical>
+          </velocity_sensing>
+        </navsat>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       Ground truth odometry — always active in Gazebo sim.
+       Plugin: gz-sim-odometry-publisher-system
+       Topic:  /gazebo/ground_truth/odom  |  rate: 50 Hz
+       gaussian_noise: 0.0 — this is ground truth, not an estimate.
+       ══════════════════════════════════════════════════════════════════ -->
+  <gazebo>
+    <plugin filename="gz-sim-odometry-publisher-system"
+            name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>odom</odom_frame>
+      <robot_base_frame>base_footprint</robot_base_frame>
+      <odom_topic>/gazebo/ground_truth/odom</odom_topic>
+      <odom_publish_frequency>50</odom_publish_frequency>
+      <gaussian_noise>0.0</gaussian_noise>
+    </plugin>
+  </gazebo>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       Stereo camera pair — ZED 2 / custom rig
+       Left:  type: camera  |  topic: /stereo/left/image_raw   |  rate: 30 Hz
+       Right: type: camera  |  topic: /stereo/right/image_raw  |  rate: 30 Hz
+       Baseline: 0.12 m  (left +0.06 m, right -0.06 m along Y)
+       HFoV: 87° = 1.5184 rad
+       ══════════════════════════════════════════════════════════════════ -->
+  <xacro:if value="$(arg stereo_camera_enabled)">
+
+    <gazebo reference="stereo_left_link">
+      <sensor name="stereo_left" type="camera">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <topic>/stereo/left/image_raw</topic>
+        <gz_frame_id>stereo_left_optical_frame</gz_frame_id>
+        <camera name="stereo_left">
+          <horizontal_fov>1.5184</horizontal_fov>
+          <image>
+            <width>1280</width>
+            <height>720</height>
+            <format>RGB_INT8</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>50.0</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.003</stddev>
+          </noise>
+        </camera>
+      </sensor>
+    </gazebo>
+
+    <gazebo reference="stereo_right_link">
+      <sensor name="stereo_right" type="camera">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <topic>/stereo/right/image_raw</topic>
+        <gz_frame_id>stereo_right_optical_frame</gz_frame_id>
+        <camera name="stereo_right">
+          <horizontal_fov>1.5184</horizontal_fov>
+          <image>
+            <width>1280</width>
+            <height>720</height>
+            <format>RGB_INT8</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>50.0</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.003</stddev>
+          </noise>
+        </camera>
+      </sensor>
+    </gazebo>
+
+  </xacro:if>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       Visual materials (Gazebo Harmonic / gz-sim 8.x)
+       These override the URDF <material> colours in the Gazebo renderer.
+
+       Palette:
+         Chassis       — dark anodised aluminium  (near-black, slight blue cast)
+         Wheels        — black vulcanised rubber   (high specular = wet-rubber look)
+         Casters       — brushed steel             (light grey, strong specular)
+         LiDAR / IMU   — matte deep-blue
+         Camera bodies — brushed silver
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <!-- Chassis body -->
+  <gazebo reference="base_link">
+    <visual>
+      <material>
+        <ambient>0.18 0.18 0.20 1.0</ambient>
+        <diffuse>0.22 0.22 0.25 1.0</diffuse>
+        <specular>0.55 0.55 0.60 1.0</specular>
+        <emissive>0.0 0.0 0.0 1.0</emissive>
+      </material>
+    </visual>
+  </gazebo>
+
+  <!-- Drive wheels (rubber black) -->
+  <gazebo reference="left_wheel_link">
+    <mu1>1.0</mu1>
+    <mu2>0.5</mu2>
+    <kp>500000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <visual>
+      <material>
+        <ambient>0.06 0.06 0.06 1.0</ambient>
+        <diffuse>0.08 0.08 0.08 1.0</diffuse>
+        <specular>0.35 0.35 0.35 1.0</specular>
+        <emissive>0.0 0.0 0.0 1.0</emissive>
+      </material>
+    </visual>
+  </gazebo>
+
+  <gazebo reference="right_wheel_link">
+    <mu1>1.0</mu1>
+    <mu2>0.5</mu2>
+    <kp>500000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <visual>
+      <material>
+        <ambient>0.06 0.06 0.06 1.0</ambient>
+        <diffuse>0.08 0.08 0.08 1.0</diffuse>
+        <specular>0.35 0.35 0.35 1.0</specular>
+        <emissive>0.0 0.0 0.0 1.0</emissive>
+      </material>
+    </visual>
+  </gazebo>
+
+  <!-- Passive swivel-wheel casters — low friction on rolling wheel -->
+  <xacro:macro name="rlai_caster_physics" params="name">
+    <gazebo reference="${name}_caster_wheel_link">
+      <mu1>0.01</mu1>
+      <mu2>0.01</mu2>
+      <kp>100000.0</kp>
+      <kd>1.0</kd>
+      <visual>
+        <material>
+          <ambient>0.05 0.05 0.05 1.0</ambient>
+          <diffuse>0.10 0.10 0.10 1.0</diffuse>
+          <specular>0.20 0.20 0.20 1.0</specular>
+          <emissive>0.0 0.0 0.0 1.0</emissive>
+        </material>
+      </visual>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:rlai_caster_physics name="front_left"/>
+  <xacro:rlai_caster_physics name="front_right"/>
+  <xacro:rlai_caster_physics name="rear_left"/>
+  <xacro:rlai_caster_physics name="rear_right"/>
+
+  <!-- 2-D LiDAR (deep blue instrument body) -->
+  <xacro:if value="$(arg lidar_2d_enabled)">
+    <gazebo reference="lidar_2d_link">
+      <visual>
+        <material>
+          <ambient>0.02 0.10 0.45 1.0</ambient>
+          <diffuse>0.03 0.15 0.60 1.0</diffuse>
+          <specular>0.40 0.50 0.80 1.0</specular>
+          <emissive>0.0 0.0 0.0 1.0</emissive>
+        </material>
+      </visual>
+    </gazebo>
+  </xacro:if>
+
+  <!-- 3-D LiDAR (dark anthracite instrument body) -->
+  <xacro:if value="$(arg lidar_3d_enabled)">
+    <gazebo reference="lidar_3d_link">
+      <visual>
+        <material>
+          <ambient>0.12 0.12 0.14 1.0</ambient>
+          <diffuse>0.16 0.16 0.18 1.0</diffuse>
+          <specular>0.45 0.45 0.48 1.0</specular>
+          <emissive>0.0 0.0 0.0 1.0</emissive>
+        </material>
+      </visual>
+    </gazebo>
+  </xacro:if>
+
+  <!-- IMU (matte dark grey PCB housing) -->
+  <xacro:if value="$(arg imu_enabled)">
+    <gazebo reference="imu_link">
+      <visual>
+        <material>
+          <ambient>0.14 0.14 0.16 1.0</ambient>
+          <diffuse>0.18 0.18 0.20 1.0</diffuse>
+          <specular>0.30 0.30 0.32 1.0</specular>
+          <emissive>0.0 0.0 0.0 1.0</emissive>
+        </material>
+      </visual>
+    </gazebo>
+  </xacro:if>
+
+  <!-- Depth camera visual colour — set in gazebo_materials.urdf.xacro -->
+
+  <!-- Stereo camera (matching brushed silver) -->
+  <xacro:if value="$(arg stereo_camera_enabled)">
+    <gazebo reference="stereo_left_link">
+      <visual>
+        <material>
+          <ambient>0.65 0.65 0.67 1.0</ambient>
+          <diffuse>0.78 0.78 0.80 1.0</diffuse>
+          <specular>0.92 0.92 0.94 1.0</specular>
+          <emissive>0.0 0.0 0.0 1.0</emissive>
+        </material>
+      </visual>
+    </gazebo>
+    <gazebo reference="stereo_right_link">
+      <visual>
+        <material>
+          <ambient>0.65 0.65 0.67 1.0</ambient>
+          <diffuse>0.78 0.78 0.80 1.0</diffuse>
+          <specular>0.92 0.92 0.94 1.0</specular>
+          <emissive>0.0 0.0 0.0 1.0</emissive>
+        </material>
+      </visual>
+    </gazebo>
+  </xacro:if>
+
+</robot>

@@ -1,0 +1,414 @@
+# Nav2 parameters for planning, control, recovery behaviors, and BT navigation.
+# Frame convention: map -> odom -> base_footprint -> base_link -> sensor frames.
+
+# Controller server publishes TwistStamped commands, selected trajectories, and MPPI samples.
+controller_server:
+  ros__parameters:
+    use_sim_time: true
+    enable_stamped_cmd_vel: true    # publish TwistStamped — matches velocity_smoother input
+
+    # Controller cycle frequency — must be ≥ costmap update frequency.
+    controller_frequency: 20.0
+
+    # Minimum time between costmap updates triggered by the controller.
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.001
+    min_theta_velocity_threshold: 0.001
+
+    # Failure tolerance: consecutive failures before aborting goal.
+    failure_tolerance: 0.3
+
+    # Progress checker: abort if robot does not move > 0.5 m in 10 s.
+    progress_checker_plugin: "progress_checker"
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5    # metres
+      movement_time_allowance:  10.0   # seconds
+
+    # Goal checker: within 0.25 m position, 0.1 rad heading.
+    goal_checker_plugins: ["general_goal_checker"]
+    general_goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance:    0.25   # metres
+      yaw_goal_tolerance:   0.1    # radians
+      stateful: true               # keep tolerance after first achievement
+
+    # Controller plugin list
+    controller_plugins: ["FollowPath"]
+
+    # MPPI samples trajectories against the costmap and goal, then averages commands by score.
+    FollowPath:
+      plugin: "nav2_mppi_controller::MPPIController"
+      time_steps: 56                 # horizon length (56 × 0.05 s = 2.8 s look-ahead)
+      model_dt:   0.05               # seconds per step
+      batch_size: 2000               # number of sampled trajectories
+      vx_std:     0.2                # exploration noise for linear velocity
+      wz_std:     0.4                # exploration noise for angular velocity
+      vx_max:     0.5                # matches diff_drive_controller max_velocity
+      vx_min:    -0.35               # matches diff_drive_controller min_velocity (reverse)
+      vy_max:     0.0                # differential drive: no lateral motion
+      wz_max:     1.9                # matches diff_drive_controller max angular velocity
+      iteration_count: 1             # MPPI update iterations per cycle
+      prune_distance: 1.7            # prune global path points within this radius [m]
+      transform_tolerance: 0.1       # TF lookup timeout [s]
+      temperature: 0.3               # MPPI temperature (higher = more exploration)
+      gamma: 0.015                   # discount factor for trajectory scoring
+      motion_model: "DiffDrive"      # use differential-drive kinematics
+      visualize: true                # publish /trajectories MarkerArray
+
+      # Trajectory critics (weighted scoring functions)
+      critics:
+        - "ConstraintCritic"
+        - "CostCritic"
+        - "GoalCritic"
+        - "GoalAngleCritic"
+        - "PathAlignCritic"
+        - "PathFollowCritic"
+        - "PathAngleCritic"
+        - "PreferForwardCritic"
+
+      ConstraintCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 4.0
+
+      CostCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.81
+        critical_cost: 300.0
+        consider_footprint: true
+        collision_cost: 1000000.0
+        near_goal_distance: 1.0
+
+      GoalCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 1.4   # only active within this distance of goal [m]
+
+      GoalAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.0
+        threshold_to_consider: 0.5   # only active very close to goal [m]
+
+      PathAlignCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 14.0
+        max_path_occupancy_ratio: 0.05
+        trajectory_point_step: 3
+        threshold_to_consider: 0.5
+        offset_from_furthest: 20
+        use_path_orientations: false
+
+      PathFollowCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        offset_from_furthest: 5
+        threshold_to_consider: 1.4
+
+      PathAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 2.0
+        offset_from_furthest: 4
+        threshold_to_consider: 0.5
+        max_angle_to_furthest: 1.0
+        forward_preference: true
+
+      PreferForwardCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 0.5
+
+# ── planner_server ────────────────────────────────────────────────────────────
+# Computes global paths from current pose to goal pose using the global costmap.
+# Plugin: SMAC Hybrid-A* — handles non-holonomic motion constraints.
+# Publishes /plan (nav_msgs/Path).
+planner_server:
+  ros__parameters:
+    use_sim_time: true
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_smac_planner::SmacPlannerHybrid"
+
+      # ── Search resolution ──────────────────────────────────────────────
+      downsample_costmap: false       # use full-resolution costmap
+      downsampling_factor: 1
+
+      # Angular resolution: 72 bins = 5° per bin.
+      angle_quantization_bins: 72
+
+      # SMAC costmap lethal cost threshold.
+      tolerance: 0.5                  # goal tolerance [m] (coarse; goal checker enforces fine)
+
+      # ── Motion constraints ─────────────────────────────────────────────
+      # minimum_turning_radius for a differential drive robot.
+      # Set small (0.25 m) to allow tight turns; 0.0 = pure rotation in place.
+      # SMAC Hybrid uses Dubins/Reeds-Shepp curves based on this.
+      minimum_turning_radius: 0.25    # metres
+      reverse_penalty: 2.0            # penalise reversing (prefer forward motion)
+      change_penalty: 0.0             # no penalty for direction change
+      non_straight_penalty: 1.2       # slight penalty for curves vs straight
+      cost_penalty: 2.0               # obstacle proximity penalty scaling
+
+      # ── Search limits ──────────────────────────────────────────────────
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 5.0          # seconds — abort and return failure after this
+
+      # Analytic expansion: try straight-line connections near the goal.
+      analytic_expansion_ratio: 3.5
+      analytic_expansion_max_length: 3.0   # metres
+
+      # ── Motion primitives ──────────────────────────────────────────────
+      allow_unknown: true             # plan through unknown cells
+      use_quadratic_cost_penalty: false
+
+# ── smoother_server ───────────────────────────────────────────────────────────
+# Smooths the global path produced by planner_server before the controller
+# receives it.  SimpleSmoother removes sharp direction reversals.
+smoother_server:
+  ros__parameters:
+    use_sim_time: true
+    smoother_plugins: ["simple_smoother"]
+
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      max_its: 1000
+      do_refinement: true
+
+# ── waypoint_follower ─────────────────────────────────────────────────────────
+# Sequences multiple NavigateToPose goals from a FollowWaypoints action call.
+waypoint_follower:
+  ros__parameters:
+    use_sim_time: true
+    loop_rate: 20                     # Hz — rate to check goal status
+    stop_on_failure: false            # continue to next waypoint on failure
+    action_server_result_timeout: 900.0   # seconds — generous for long missions
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: true
+      waypoint_pause_duration: 0      # seconds to pause at each waypoint (0 = skip)
+
+# ── global_costmap ────────────────────────────────────────────────────────────
+# Static global map of the entire environment.
+# Layers: static (from /map) + obstacle (live /scan) + inflation.
+# Updates at 1 Hz — sufficient since the static map rarely changes.
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: true
+
+      # Frame and sizing
+      global_frame: map
+      robot_base_frame: base_footprint
+      update_frequency:  1.0          # Hz
+      publish_frequency: 1.0          # Hz
+      resolution: 0.05                # metres/cell — matches map resolution
+
+      # Robot footprint polygon (padded chassis 0.50 × 0.40 m + 0.03 m padding)
+      footprint: "[[-0.28, -0.23], [-0.28, 0.23], [0.28, 0.23], [0.28, -0.23]]"
+      footprint_padding: 0.03         # additional safety buffer [m]
+
+      # Costmap layers (processed in order)
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true   # keep last map even if publisher disappears
+
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: true            # remove obstacles when area is visible again
+          marking: true             # mark new obstacles
+          data_type: "LaserScan"
+          raytrace_max_range: 12.0  # matches AMCL laser_max_range
+          raytrace_min_range: 0.25  # ignore returns closer than 0.25 m (robot body sides at ~0.20 m)
+          obstacle_max_range: 8.0
+          obstacle_min_range: 0.25  # ignore returns closer than 0.25 m (robot body sides at ~0.20 m)
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0    # exponential decay rate
+        inflation_radius: 0.55      # metres — robot half-diagonal (~0.36) + 0.19 buffer
+
+      always_send_full_costmap: true
+
+# ── local_costmap ─────────────────────────────────────────────────────────────
+# Rolling-window costmap centred on the robot.
+# No static layer — only live sensor data + inflation.
+# Updates at 5 Hz for responsive obstacle avoidance.
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      use_sim_time: true
+
+      # Frame and sizing
+      global_frame: odom
+      robot_base_frame: base_footprint
+      update_frequency:  5.0          # Hz
+      publish_frequency: 2.0          # Hz
+      resolution: 0.05                # metres/cell
+
+      # Rolling window centred on robot
+      rolling_window: true
+      width:  3                       # metres (integer as per nav2 convention)
+      height: 3                       # metres
+      origin_x: 0.0
+      origin_y: 0.0
+
+      # Robot footprint polygon (same as global_costmap)
+      footprint: "[[-0.28, -0.23], [-0.28, 0.23], [0.28, 0.23], [0.28, -0.23]]"
+      footprint_padding: 0.03
+
+      plugins: ["obstacle_layer", "inflation_layer"]
+
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 12.0
+          raytrace_min_range: 0.25  # ignore returns closer than 0.25 m (robot body hits)
+          obstacle_max_range: 8.0
+          obstacle_min_range: 0.25  # ignore returns closer than 0.25 m (robot body hits)
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55
+
+      always_send_full_costmap: true
+
+# ── Lifecycle manager ──────────────────────────────────────
+# Manages all planning/control nodes.  Runs alongside lifecycle_manager_localization.
+# Dependency order: controller_server must start after planner_server so that
+# the global costmap is ready when the first goal arrives.
+lifecycle_manager_navigation:
+  ros__parameters:
+    use_sim_time: true
+    autostart: true
+    node_names:
+      - planner_server
+      - smoother_server
+      - controller_server
+      - waypoint_follower
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Recovery Behaviors, Behavior Trees & Action Client
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── behavior_server ───────────────────────────────────────────────────────────
+# Hosts recovery behavior plugins that bt_navigator calls when navigation fails.
+# Each plugin exposes a ROS 2 action server that the BT can invoke.
+#
+# Plugins active:
+#   spin            → rotate in place to clear sensor blind spots
+#   backup          → drive backward a fixed distance
+#   drive_on_heading → drive forward a fixed distance (escape traps)
+#   wait            → pause for a configurable duration
+behavior_server:
+  ros__parameters:
+    use_sim_time: true
+    enable_stamped_cmd_vel: true    # publish TwistStamped — matches velocity_smoother input
+    cycle_frequency: 10.0             # Hz — how often the behavior server spins
+
+    behavior_plugins:
+      - "spin"
+      - "backup"
+      - "drive_on_heading"
+      - "wait"
+
+    spin:
+      plugin: "nav2_behaviors::Spin"
+    backup:
+      plugin: "nav2_behaviors::BackUp"
+    drive_on_heading:
+      plugin: "nav2_behaviors::DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors::Wait"
+
+    # ── Frame / robot settings ────────────────────────────────────────────
+    local_frame:        odom
+    global_frame:       map
+    robot_base_frame:   base_footprint
+    transform_tolerance: 0.1          # seconds
+
+    # ── Safety simulation ─────────────────────────────────────────────────
+    # simulate_ahead_time: how far ahead to simulate the recovery motion to
+    # check for collisions before executing it.
+    simulate_ahead_time: 2.0          # seconds
+
+    # ── Spin behavior limits ──────────────────────────────────────────────
+    # Matches diff_drive_controller angular velocity limits.
+    max_rotational_vel: 1.0           # rad/s
+    min_rotational_vel: 0.4           # rad/s
+    rotational_acc_lim: 3.2           # rad/s²
+
+# ── bt_navigator ──────────────────────────────────────────────────────────────
+# Orchestrates the full navigation pipeline using behavior trees.
+# Subscribes to /goal_pose, runs the BT, and exposes the NavigateToPose and
+# NavigateThroughPoses action servers.
+#
+# The default BT is navigate_to_pose.xml.  Callers can override per-goal via
+# the action request's behavior_tree field.
+#
+# CRITICAL: odom_topic must be /diff_drive_controller/odom — not /odom.
+#           bt_navigator uses it internally for position feedback.
+bt_navigator:
+  ros__parameters:
+    use_sim_time: true
+
+    # ── Frames ────────────────────────────────────────────────────────────
+    global_frame:     map
+    robot_base_frame: base_footprint
+    odom_topic:       /diff_drive_controller/odom    # actual topic, cannot be renamed
+
+    # ── Navigator plugins ─────────────────────────────────────────────────
+    navigators: ["navigate_to_pose", "navigate_through_poses"]
+    navigate_to_pose:
+      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
+    navigate_through_poses:
+      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+
+    # ── Behavior trees ────────────────────────────────────────────────────
+    # default_nav_to_pose_bt_xml: used when no BT is specified in the action goal.
+    # Path is resolved at launch time via PathJoinSubstitution and overrides this value.
+    default_nav_to_pose_bt_xml: "navigate_to_pose.xml"
+
+    # Timeout for the BT to complete one navigation goal.
+    bt_loop_duration: 10              # ms — BT tick rate
+    default_server_timeout: 20        # seconds — per action call
+    wait_for_service_timeout: 10000   # ms — wait for action servers on startup
+
+    # Error code parameter names (required in Nav2 Jazzy to suppress warnings)
+    error_code_names:
+      - compute_path_error_code
+      - follow_path_error_code
+      - spin_error_code
+      - backup_code_id
+lifecycle_manager_behavior:
+  ros__parameters:
+    use_sim_time: true
+    autostart: true
+    node_names:
+      - behavior_server
+      - bt_navigator

@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<robot name="rlai_bot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="sim_mode"              default="gazebo"/>
+  <xacro:arg name="robot_namespace"       default=""/>
+  <xacro:arg name="drive_type"            default="diff_drive"/>
+
+  <!-- Sensor enable/disable toggles -->
+  <xacro:arg name="lidar_2d_enabled"      default="true"/>
+  <xacro:arg name="lidar_3d_enabled"      default="false"/>
+  <xacro:arg name="depth_camera_enabled"  default="true"/>
+  <xacro:arg name="stereo_camera_enabled" default="false"/>
+  <xacro:arg name="imu_enabled"           default="true"/>
+  <xacro:arg name="gps_enabled"           default="false"/>
+
+  <!-- Sensor model selection -->
+  <xacro:arg name="lidar_2d_model"        default="rplidar_a3"/>
+  <xacro:arg name="lidar_3d_model"        default="velodyne_vlp16"/>
+  <xacro:arg name="camera_model"          default="intel_d435i"/>
+
+  <xacro:include filename="$(find rlai_description)/urdf/base/base.urdf.xacro"/>
+  <xacro:include filename="$(find rlai_description)/urdf/base/wheels.urdf.xacro"/>
+  <xacro:include filename="$(find rlai_description)/urdf/base/payload_platform.urdf.xacro"/>
+
+  <xacro:include filename="$(find rlai_description)/urdf/sensors/imu.urdf.xacro"/>
+  <xacro:include filename="$(find rlai_description)/urdf/sensors/lidar_2d.urdf.xacro"/>
+  <xacro:include filename="$(find rlai_description)/urdf/sensors/lidar_3d.urdf.xacro"/>
+  <xacro:include filename="$(find rlai_description)/urdf/sensors/depth_camera.urdf.xacro"/>
+  <xacro:include filename="$(find rlai_description)/urdf/sensors/stereo_camera.urdf.xacro"/>
+  <xacro:include filename="$(find rlai_description)/urdf/sensors/gps.urdf.xacro"/>
+
+  <xacro:include filename="$(find rlai_description)/urdf/control/ros2_control.urdf.xacro"/>
+
+  <!--
+    xacro:property is evaluated AFTER arg substitution, making the string
+    comparison safe and readable across all xacro versions.
+  -->
+  <xacro:property name="_sim_mode" value="$(arg sim_mode)"/>
+  <xacro:if value="${_sim_mode == 'gazebo'}">
+    <xacro:include filename="$(find rlai_description)/urdf/gazebo/gazebo_sensors.urdf.xacro"/>
+    <xacro:include filename="$(find rlai_description)/urdf/gazebo/gazebo_materials.urdf.xacro"/>
+  </xacro:if>
+
+  <xacro:rlai_base/>
+  <xacro:rlai_wheels wheel_separation="0.35" wheel_radius="0.0625"/>
+
+  <xacro:if value="$(arg imu_enabled)">
+    <xacro:rlai_imu parent="base_link"
+                    xyz="0.0 0.0 0.08"
+                    rpy="0 0 0"/>
+  </xacro:if>
+
+  <xacro:if value="$(arg lidar_2d_enabled)">
+    <xacro:rlai_lidar_2d parent="base_link"
+                         xyz="0.20 0.0 0.18"
+                         rpy="0 0 0"
+                         model="$(arg lidar_2d_model)"/>
+  </xacro:if>
+
+  <xacro:if value="$(arg lidar_3d_enabled)">
+    <xacro:rlai_lidar_3d parent="base_link"
+                         xyz="0.0 0.0 0.30"
+                         rpy="0 0 0"
+                         model="$(arg lidar_3d_model)"/>
+  </xacro:if>
+
+  <xacro:if value="$(arg depth_camera_enabled)">
+    <!-- Camera body centre 12.5 mm behind front face → front face flush at x=0.250 m -->
+    <xacro:rlai_depth_camera parent="base_link"
+                              xyz="0.237 0.0 0.125"
+                              rpy="0 0 0"
+                              model="$(arg camera_model)"/>
+  </xacro:if>
+
+  <xacro:if value="$(arg stereo_camera_enabled)">
+    <xacro:rlai_stereo_camera parent="base_link"
+                               xyz="0.25 0.0 0.13"
+                               rpy="0 0 0"/>
+  </xacro:if>
+
+  <xacro:if value="$(arg gps_enabled)">
+    <xacro:rlai_gps parent="base_link"
+                    xyz="0.0 0.0 0.35"
+                    rpy="0 0 0"/>
+  </xacro:if>
+
+  <xacro:rlai_payload_platform parent="base_link"/>
+
+  <xacro:rlai_ros2_control sim_mode="$(arg sim_mode)"/>
+
+</robot>

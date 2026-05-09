@@ -1,0 +1,17 @@
+<!-- Waypoint patrol behavior with recovery actions for missed or blocked waypoints. -->
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="6" name="PatrolRecovery">
+      <FollowWaypoints waypoints="{waypoints}" waypoint_statuses="{waypoint_statuses}"/>
+      <ReactiveFallback name="RecoveryFallback">
+        <GoalUpdated/>
+        <SequenceStar name="RecoveryActions">
+          <Spin spin_dist="1.57"/>
+          <BackUp backup_dist="0.30" backup_speed="0.15"/>
+          <ClearEntireCostmap name="ClearLocalCostmap" service_name="local_costmap/clear_entirely_local_costmap"/>
+          <ClearEntireCostmap name="ClearGlobalCostmap" service_name="global_costmap/clear_entirely_global_costmap"/>
+        </SequenceStar>
+      </ReactiveFallback>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>

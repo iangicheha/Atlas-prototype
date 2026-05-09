@@ -1,0 +1,281 @@
+# docker/docker-compose.yml
+# Launches the rbot Gazebo Harmonic simulation inside Docker.
+#
+# Prerequisites (run once on the host before starting):
+#   xhost +local:docker
+#
+# ── Phase 7 — SLAM mapping ────────────────────────────────────────────────
+#   docker compose -f docker/docker-compose.yml up sim_mapping
+#   docker compose -f docker/docker-compose.yml up rviz_mapping
+#   docker compose -f docker/docker-compose.yml run --rm teleop
+#
+# ── Phase 8a — AMCL localization ─────────────────────────────────────────
+#   docker compose -f docker/docker-compose.yml up sim           # Gazebo + EKF
+#   docker compose -f docker/docker-compose.yml up nav           # map_server + AMCL
+#   docker compose -f docker/docker-compose.yml up rviz_nav      # navigation RViz
+#   docker compose -f docker/docker-compose.yml run --rm teleop  # drive to localize
+#
+# Convenience wrapper (handles xhost automatically):
+#   bash scripts/run_sim.sh           # Gazebo only
+#   bash scripts/run_sim.sh --rviz    # Gazebo + RViz
+
+services:
+
+  sim:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gazebo
+    image: rlai-bot:gazebo
+    container_name: rlai_sim
+    # ── GUI / X11 ─────────────────────────────────────────────────────────
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - XAUTHORITY=/tmp/.docker.xauth
+      - QT_X11_NO_MITSHM=1
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      # model://rlai_meshes/... is resolved by appending 'rlai_meshes/' to each
+      # search-path entry → point at the parent share/ dir, not share/rlai_meshes/
+      - GZ_SIM_RESOURCE_PATH=/ros2_ws/install/rlai_gazebo/share/rlai_gazebo:/ros2_ws/install/rlai_meshes/share
+      # Uncomment if hardware rendering fails (CPU fallback, slower):
+      # - LIBGL_ALWAYS_SOFTWARE=1
+      # Set to 'true' (via run_sim.sh --headless or host env) to skip the GUI
+      - RLAI_GZ_HEADLESS=${RLAI_GZ_HEADLESS:-false}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      # Bind-mount src so launch/config edits apply without rebuilding
+      - ../src:/ros2_ws/src/rlai-bot/src:ro
+    # ── GPU (Intel / AMD via DRI) ────────────────────────────────────────
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+    # ── Networking (host = ROS 2 DDS discovery works out of the box) ─────
+    network_mode: host
+    ipc: host
+    # ── Launch ───────────────────────────────────────────────────────────
+    # Phase 8+: runs Gazebo + EKF only (no SLAM, no AMCL).
+    # AMCL is started separately via the 'nav' service.
+    # SLAM mapping is available via the 'sim_mapping' service.
+    command: >-
+      ros2 launch rlai_bringup simulation.launch.py
+        world:=small_warehouse
+        x:=1.0
+        y:=1.0
+        lidar_2d_enabled:=true
+        lidar_3d_enabled:=false
+        depth_camera_enabled:=true
+        stereo_camera_enabled:=true
+        imu_enabled:=true
+        gps_enabled:=false
+        localization_enabled:=true
+        mapping_enabled:=false
+        headless:=${RLAI_GZ_HEADLESS:-false}
+    stdin_open: true
+    tty: true
+    restart: "no"
+
+  # ── sim_mapping — Gazebo + EKF + SLAM (Phase 7 workflow) ──────────────
+  # Preserved for re-mapping runs.  Mutually exclusive with 'nav'.
+  # Usage: docker compose -f docker/docker-compose.yml up sim_mapping
+  sim_mapping:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gazebo
+    image: rlai-bot:gazebo
+    container_name: rlai_sim_mapping
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - XAUTHORITY=/tmp/.docker.xauth
+      - QT_X11_NO_MITSHM=1
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - GZ_SIM_RESOURCE_PATH=/ros2_ws/install/rlai_gazebo/share/rlai_gazebo:/ros2_ws/install/rlai_meshes/share
+      - RLAI_GZ_HEADLESS=${RLAI_GZ_HEADLESS:-false}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ../src:/ros2_ws/src/rlai-bot/src:ro
+      - ../maps:/ros2_ws/maps:rw
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+    network_mode: host
+    ipc: host
+    command: >-
+      ros2 launch rlai_bringup simulation.launch.py
+        world:=small_warehouse
+        lidar_2d_enabled:=true
+        lidar_3d_enabled:=false
+        depth_camera_enabled:=true
+        stereo_camera_enabled:=true
+        imu_enabled:=true
+        gps_enabled:=false
+        localization_enabled:=true
+        mapping_enabled:=true
+        slam_rviz_enabled:=false
+        headless:=${RLAI_GZ_HEADLESS:-false}
+    stdin_open: true
+    tty: true
+    restart: "no"
+
+  # ── RViz2 — connects to the running sim via host DDS ──────────────────
+  rviz:
+    image: rlai-bot:gazebo
+    container_name: rlai_rviz
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - XAUTHORITY=/tmp/.docker.xauth
+      - QT_X11_NO_MITSHM=1
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ../src:/ros2_ws/src/rlai-bot/src:ro
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+    network_mode: host
+    ipc: host
+    command: >
+      ros2 run rviz2 rviz2
+        -d /ros2_ws/install/rlai_gazebo/share/rlai_gazebo/rviz/gazebo_live.rviz
+        --ros-args -p use_sim_time:=true
+    stdin_open: true
+    tty: true
+    restart: "no"
+
+  # ── Nav2 localization + navigation service (Phase 8a+) ─────────────────
+  # Starts AMCL/map_server first, then the Nav2 planning/control stack.
+  # Requires the 'sim' service to already be running.
+  # Maps are stored in /ros2_ws/maps/ inside the container.
+  # Usage: docker compose -f docker/docker-compose.yml up nav
+  nav:
+    image: rlai-bot:gazebo
+    container_name: rlai_nav
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    volumes:
+      - ../src:/ros2_ws/src/rlai-bot/src:ro
+      - ../maps:/ros2_ws/maps:ro
+    network_mode: host
+    ipc: host
+    # Rebuild edited launch packages so bind-mounted source changes are reflected.
+    command:
+      - bash
+      - -c
+      - |
+        cd /ros2_ws &&
+        colcon build --packages-select rlai_localization rlai_navigation --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release 2>&1 &&
+        . install/setup.bash &&
+        ros2 launch rlai_localization localization.launch.py use_amcl:=true map_yaml_file:=${RLAI_MAP_YAML:-/ros2_ws/maps/my_map.yaml} &
+        ros2 launch rlai_navigation navigation.launch.py
+    stdin_open: true
+    tty: true
+    restart: "no"
+
+  # ── RViz2 navigation view (Phase 8a+) ────────────────────────────────
+  # Shows: static map, AMCL particle cloud, laser scan, robot model, TF.
+  # Use the SetInitialPose tool (arrow icon) to relocalize AMCL.
+  # Usage: docker compose -f docker/docker-compose.yml up rviz_nav
+  rviz_nav:
+    image: rlai-bot:gazebo
+    container_name: rlai_rviz_nav
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - XAUTHORITY=/tmp/.docker.xauth
+      - QT_X11_NO_MITSHM=1
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ../src:/ros2_ws/src/rlai-bot/src:ro
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+    network_mode: host
+    ipc: host
+    command:
+      - bash
+      - -c
+      - |
+        cd /ros2_ws &&
+        colcon build --packages-select rlai_navigation --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release 2>&1 &&
+        . install/setup.bash &&
+        ros2 run rviz2 rviz2 -d /ros2_ws/install/rlai_navigation/share/rlai_navigation/rviz/navigation.rviz --ros-args -p use_sim_time:=true
+    stdin_open: true
+    tty: true
+    restart: "no"
+
+  # ── RViz2 mapping view — SLAM overhead map + LaserScan + TF ───────────
+  rviz_mapping:
+    image: rlai-bot:gazebo
+    container_name: rlai_rviz_mapping
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - XAUTHORITY=/tmp/.docker.xauth
+      - QT_X11_NO_MITSHM=1
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ../src:/ros2_ws/src/rlai-bot/src:ro
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+    network_mode: host
+    ipc: host
+    command: >
+      ros2 run rviz2 rviz2
+        -d /ros2_ws/install/rlai_mapping/share/rlai_mapping/rviz/mapping.rviz
+        --ros-args -p use_sim_time:=true
+    stdin_open: true
+    tty: true
+    restart: "no"
+
+  # ── Keyboard teleoperation ─────────────────────────────────────────────
+  # Publishes TwistStamped (stamped:=true) so it matches velocity_smoother's
+  # enable_stamped_cmd_vel: true setting.  Requires sim to be running first.
+  # Usage: docker compose -f docker/docker-compose.yml run --rm teleop
+  teleop:
+    image: rlai-bot:gazebo
+    container_name: rlai_teleop
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    network_mode: host
+    ipc: host
+    stdin_open: true
+    tty: true
+    restart: "no"
+    command: >
+      ros2 run teleop_twist_keyboard teleop_twist_keyboard
+        --ros-args -p stamped:=true
+          -r cmd_vel:=/cmd_vel
+
+  # ── Interactive shell into the built image ─────────────────────────────
+  shell:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gazebo
+    image: rlai-bot:gazebo
+    container_name: rlai_shell
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - QT_X11_NO_MITSHM=1
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+    network_mode: host
+    ipc: host
+    command: bash
+    stdin_open: true
+    tty: true
+    restart: "no"

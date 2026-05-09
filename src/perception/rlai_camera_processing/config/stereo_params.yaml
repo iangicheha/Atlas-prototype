@@ -1,0 +1,32 @@
+/**:
+  ros__parameters:
+    use_sim_time: true
+
+/stereo/disparity:
+  ros__parameters:
+    use_sim_time: true
+    # SGM / BM disparity algorithm selection (0 = BM, 1 = SGM if available)
+    stereo_algorithm: 0
+    # Minimum/maximum disparity (pixels)
+    min_disparity: 0
+    disparity_range: 64
+    # SSD texture threshold — filters out low-gradient regions
+    texture_threshold: 10
+    # SADWindowSize for Block Matching
+    sad_window_size: 15
+    # Uniqueness ratio (%)
+    uniqueness_ratio: 15.0
+    # Speckle filter range and size
+    speckle_range: 4
+    speckle_size: 100
+    # Approximate sub-pixel accuracy
+    approximate_sync: true
+
+/stereo/pointcloud:
+  ros__parameters:
+    use_sim_time: true
+
+/depth_camera/depth_to_pointcloud:
+  ros__parameters:
+    use_sim_time: true
+    queue_size: 5

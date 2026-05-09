@@ -1,0 +1,356 @@
+<?xml version="1.0"?>
+<!--
+  outdoor_courtyard.sdf — 25 × 25 m outdoor courtyard environment for rbot.
+
+  Layout (top-down, Z-up, origin at centre):
+    - Low perimeter hedge/wall: 0.5 m high, 0.3 m thick
+    - Cross-shaped paved paths: 2.0 m wide central E-W and N-S paths
+    - 4 tree cylinders (r=0.15, h=2.0) in the four quadrant corners
+    - 4 benches (elongated flat boxes, 1.4 × 0.4 × 0.5 m)
+    - 2 planters (square boxes, 0.6 × 0.6 × 0.5 m)
+    - 2 lamp posts (thin tall cylinders: r=0.05, h=3.5 m)
+    - Bright outdoor directional sunlight
+    - No ceiling — fully open sky
+
+  Coordinate origin: centre of courtyard.
+  Robot spawn: (0, 0, 0.1) — clear intersection of paths.
+-->
+<sdf version="1.11">
+  <world name="outdoor_courtyard">
+
+    <!-- ── Physics ─────────────────────────────────────────────────────── -->
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- ── System plugins ──────────────────────────────────────────────── -->
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-sensors-system"
+            name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-imu-system"
+            name="gz::sim::systems::Imu"/>
+
+    <!-- ── Outdoor lighting ─────────────────────────────────────────────── -->
+    <!-- Primary sun — high noon angle -->
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 30 0 0 0</pose>
+      <diffuse>1.0 0.97 0.90 1</diffuse>
+      <specular>0.4 0.4 0.35 1</specular>
+      <direction>-0.3 -0.5 -0.82</direction>
+    </light>
+    <!-- Sky fill light (simulate scattered sky) -->
+    <light name="sky_fill" type="directional">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 20 0 0 0</pose>
+      <diffuse>0.45 0.50 0.65 1</diffuse>
+      <specular>0.0 0.0 0.0 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+
+    <!-- ── Ground ──────────────────────────────────────────────────────── -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material>
+            <ambient>0.42 0.55 0.32 1</ambient>
+            <diffuse>0.42 0.55 0.32 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Paved courtyard surface (25 × 25 m concrete/paver look) -->
+    <model name="courtyard_paving">
+      <static>true</static>
+      <pose>0 0 0.002 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>25 25 0.001</size></box></geometry>
+          <material>
+            <ambient>0.72 0.70 0.65 1</ambient>
+            <diffuse>0.72 0.70 0.65 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         PERIMETER HEDGE / LOW WALLS  (25 × 25 m, 0.5 m high, 0.3 m thick)
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <model name="hedge_north">
+      <static>true</static>
+      <pose>0 12.5 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>25.6 0.3 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>25.6 0.3 0.5</size></box></geometry>
+          <material><ambient>0.22 0.45 0.18 1</ambient><diffuse>0.22 0.45 0.18 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="hedge_south">
+      <static>true</static>
+      <pose>0 -12.5 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>25.6 0.3 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>25.6 0.3 0.5</size></box></geometry>
+          <material><ambient>0.22 0.45 0.18 1</ambient><diffuse>0.22 0.45 0.18 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="hedge_east">
+      <static>true</static>
+      <pose>12.5 0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.3 25.0 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.3 25.0 0.5</size></box></geometry>
+          <material><ambient>0.22 0.45 0.18 1</ambient><diffuse>0.22 0.45 0.18 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="hedge_west">
+      <static>true</static>
+      <pose>-12.5 0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.3 25.0 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.3 25.0 0.5</size></box></geometry>
+          <material><ambient>0.22 0.45 0.18 1</ambient><diffuse>0.22 0.45 0.18 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TREES — 4 cylinders in quadrant corners (trunk + foliage sphere)
+         Positions: (±7, ±7)
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- NW tree -->
+    <model name="tree_nw">
+      <static>true</static>
+      <pose>-7 7 1.0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.15</radius><length>2.0</length></cylinder></geometry></collision>
+        <visual name="trunk">
+          <geometry><cylinder><radius>0.15</radius><length>2.0</length></cylinder></geometry>
+          <material><ambient>0.38 0.25 0.12 1</ambient><diffuse>0.38 0.25 0.12 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="tree_nw_foliage">
+      <static>true</static>
+      <pose>-7 7 2.8 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><sphere><radius>1.0</radius></sphere></geometry></collision>
+        <visual name="visual"><geometry><sphere><radius>1.0</radius></sphere></geometry>
+          <material><ambient>0.20 0.50 0.15 1</ambient><diffuse>0.20 0.50 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- NE tree -->
+    <model name="tree_ne">
+      <static>true</static>
+      <pose>7 7 1.0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.15</radius><length>2.0</length></cylinder></geometry></collision>
+        <visual name="trunk">
+          <geometry><cylinder><radius>0.15</radius><length>2.0</length></cylinder></geometry>
+          <material><ambient>0.38 0.25 0.12 1</ambient><diffuse>0.38 0.25 0.12 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="tree_ne_foliage">
+      <static>true</static>
+      <pose>7 7 2.8 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><sphere><radius>1.0</radius></sphere></geometry></collision>
+        <visual name="visual"><geometry><sphere><radius>1.0</radius></sphere></geometry>
+          <material><ambient>0.20 0.50 0.15 1</ambient><diffuse>0.20 0.50 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- SW tree -->
+    <model name="tree_sw">
+      <static>true</static>
+      <pose>-7 -7 1.0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.15</radius><length>2.0</length></cylinder></geometry></collision>
+        <visual name="trunk">
+          <geometry><cylinder><radius>0.15</radius><length>2.0</length></cylinder></geometry>
+          <material><ambient>0.38 0.25 0.12 1</ambient><diffuse>0.38 0.25 0.12 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="tree_sw_foliage">
+      <static>true</static>
+      <pose>-7 -7 2.8 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><sphere><radius>1.0</radius></sphere></geometry></collision>
+        <visual name="visual"><geometry><sphere><radius>1.0</radius></sphere></geometry>
+          <material><ambient>0.20 0.50 0.15 1</ambient><diffuse>0.20 0.50 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- SE tree -->
+    <model name="tree_se">
+      <static>true</static>
+      <pose>7 -7 1.0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.15</radius><length>2.0</length></cylinder></geometry></collision>
+        <visual name="trunk">
+          <geometry><cylinder><radius>0.15</radius><length>2.0</length></cylinder></geometry>
+          <material><ambient>0.38 0.25 0.12 1</ambient><diffuse>0.38 0.25 0.12 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="tree_se_foliage">
+      <static>true</static>
+      <pose>7 -7 2.8 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><sphere><radius>1.0</radius></sphere></geometry></collision>
+        <visual name="visual"><geometry><sphere><radius>1.0</radius></sphere></geometry>
+          <material><ambient>0.20 0.50 0.15 1</ambient><diffuse>0.20 0.50 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         BENCHES — 4 benches along paths, oriented parallel to nearest path
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- North path bench (east side) -->
+    <model name="bench_north_e">
+      <static>true</static>
+      <pose>5 4.5 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.4 0.4 0.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.4 0.4 0.5</size></box></geometry>
+          <material><ambient>0.45 0.33 0.18 1</ambient><diffuse>0.45 0.33 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+    <!-- South path bench (west side) -->
+    <model name="bench_south_w">
+      <static>true</static>
+      <pose>-5 -4.5 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.4 0.4 0.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.4 0.4 0.5</size></box></geometry>
+          <material><ambient>0.45 0.33 0.18 1</ambient><diffuse>0.45 0.33 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+    <!-- East path bench (north side) -->
+    <model name="bench_east_n">
+      <static>true</static>
+      <pose>4.5 -5 0.25 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.4 0.4 0.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.4 0.4 0.5</size></box></geometry>
+          <material><ambient>0.45 0.33 0.18 1</ambient><diffuse>0.45 0.33 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+    <!-- West path bench (south side) -->
+    <model name="bench_west_s">
+      <static>true</static>
+      <pose>-4.5 5 0.25 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.4 0.4 0.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.4 0.4 0.5</size></box></geometry>
+          <material><ambient>0.45 0.33 0.18 1</ambient><diffuse>0.45 0.33 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         PLANTERS — 2 decorative planter boxes
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <model name="planter_ne">
+      <static>true</static>
+      <pose>10 3 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.6 0.6 0.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.6 0.6 0.5</size></box></geometry>
+          <material><ambient>0.55 0.40 0.25 1</ambient><diffuse>0.55 0.40 0.25 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="planter_sw">
+      <static>true</static>
+      <pose>-10 -3 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.6 0.6 0.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.6 0.6 0.5</size></box></geometry>
+          <material><ambient>0.55 0.40 0.25 1</ambient><diffuse>0.55 0.40 0.25 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         LAMP POSTS — 2 tall thin cylinder posts with spherical light cap
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Lamp post north -->
+    <model name="lamp_north">
+      <static>true</static>
+      <pose>0 10 1.75 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.05</radius><length>3.5</length></cylinder></geometry></collision>
+        <visual name="pole">
+          <geometry><cylinder><radius>0.05</radius><length>3.5</length></cylinder></geometry>
+          <material><ambient>0.30 0.30 0.32 1</ambient><diffuse>0.30 0.30 0.32 1</diffuse></material>
+        </visual>
+        <visual name="globe">
+          <pose>0 0 1.75 0 0 0</pose>
+          <geometry><sphere><radius>0.18</radius></sphere></geometry>
+          <material><ambient>1.0 1.0 0.85 1</ambient><diffuse>1.0 1.0 0.85 1</diffuse>
+            <emissive>0.8 0.8 0.6 1</emissive></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Lamp post south -->
+    <model name="lamp_south">
+      <static>true</static>
+      <pose>0 -10 1.75 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.05</radius><length>3.5</length></cylinder></geometry></collision>
+        <visual name="pole">
+          <geometry><cylinder><radius>0.05</radius><length>3.5</length></cylinder></geometry>
+          <material><ambient>0.30 0.30 0.32 1</ambient><diffuse>0.30 0.30 0.32 1</diffuse></material>
+        </visual>
+        <visual name="globe">
+          <pose>0 0 1.75 0 0 0</pose>
+          <geometry><sphere><radius>0.18</radius></sphere></geometry>
+          <material><ambient>1.0 1.0 0.85 1</ambient><diffuse>1.0 1.0 0.85 1</diffuse>
+            <emissive>0.8 0.8 0.6 1</emissive></material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

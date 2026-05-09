@@ -1,0 +1,24 @@
+<!-- Navigation with replanning and recovery actions for blocked or failed paths. -->
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <ControllerSelector selected_controller="{selected_controller}" default_controller="FollowPath" topic_name="controller_selector"/>
+        <PlannerSelector selected_planner="{selected_planner}" default_planner="GridBased" topic_name="planner_selector"/>
+        <RateController hz="1.0">
+          <ComputePathToPose goal="{goal}" path="{path}" planner_id="{selected_planner}"/>
+        </RateController>
+        <FollowPath path="{path}" controller_id="{selected_controller}"/>
+      </PipelineSequence>
+      <ReactiveFallback name="RecoveryFallback">
+        <GoalUpdated/>
+        <SequenceStar name="RecoveryActions">
+          <Spin spin_dist="1.57"/>
+          <BackUp backup_dist="0.30" backup_speed="0.15"/>
+          <ClearEntireCostmap name="ClearLocalCostmap" service_name="local_costmap/clear_entirely_local_costmap"/>
+          <ClearEntireCostmap name="ClearGlobalCostmap" service_name="global_costmap/clear_entirely_global_costmap"/>
+        </SequenceStar>
+      </ReactiveFallback>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>

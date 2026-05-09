@@ -1,0 +1,91 @@
+# ROS-Gazebo topic bridge configuration loaded by gazebo.launch.py.
+# /joint_states is intentionally absent because ros2_control is the sole publisher.
+
+- ros_topic_name: /clock
+  gz_topic_name: /clock
+  ros_type_name: rosgraph_msgs/msg/Clock
+  gz_type_name: gz.msgs.Clock
+  direction: GZ_TO_ROS
+
+# /cmd_vel is handled by diff_drive_controller; bridging Twist here conflicts with Nav2 TwistStamped.
+
+- ros_topic_name: /gazebo/ground_truth/odom
+  gz_topic_name: /gazebo/ground_truth/odom
+  ros_type_name: nav_msgs/msg/Odometry
+  gz_type_name: gz.msgs.Odometry
+  direction: GZ_TO_ROS
+
+- ros_topic_name: /scan
+  gz_topic_name: /scan
+  ros_type_name: sensor_msgs/msg/LaserScan
+  gz_type_name: gz.msgs.LaserScan
+  direction: GZ_TO_ROS
+
+- ros_topic_name: /imu/data_raw
+  gz_topic_name: /imu/data_raw
+  ros_type_name: sensor_msgs/msg/Imu
+  gz_type_name: gz.msgs.IMU
+  direction: GZ_TO_ROS
+
+- ros_topic_name: /depth_camera/depth
+  gz_topic_name: /depth_camera/depth
+  ros_type_name: sensor_msgs/msg/Image
+  gz_type_name: gz.msgs.Image
+  direction: GZ_TO_ROS
+
+- ros_topic_name: /depth_camera/image_raw
+  gz_topic_name: /depth_camera/image_raw
+  ros_type_name: sensor_msgs/msg/Image
+  gz_type_name: gz.msgs.Image
+  direction: GZ_TO_ROS
+
+# Gazebo publishes CameraInfo directly on /depth_camera/camera_info
+- ros_topic_name: /depth_camera/camera_info
+  gz_topic_name: /depth_camera/camera_info
+  ros_type_name: sensor_msgs/msg/CameraInfo
+  gz_type_name: gz.msgs.CameraInfo
+  direction: GZ_TO_ROS
+
+# Optional sensor bridges are harmless when the corresponding Gazebo publisher is disabled.
+
+# 3-D LiDAR
+# Gazebo publishes PointCloudPacked on the /points subtopic; the primary
+# topic publishes LaserScan.  Bridge the /points subtopic → ROS PointCloud2.
+- ros_topic_name: /lidar_3d/points_raw
+  gz_topic_name: /lidar_3d/points_raw/points
+  ros_type_name: sensor_msgs/msg/PointCloud2
+  gz_type_name: gz.msgs.PointCloudPacked
+  direction: GZ_TO_ROS
+
+# GPS / NavSat
+- ros_topic_name: /gps/fix
+  gz_topic_name: /gps/fix
+  ros_type_name: sensor_msgs/msg/NavSatFix
+  gz_type_name: gz.msgs.NavSat
+  direction: GZ_TO_ROS
+
+# Stereo cameras
+- ros_topic_name: /stereo/left/image_raw
+  gz_topic_name: /stereo/left/image_raw
+  ros_type_name: sensor_msgs/msg/Image
+  gz_type_name: gz.msgs.Image
+  direction: GZ_TO_ROS
+
+- ros_topic_name: /stereo/right/image_raw
+  gz_topic_name: /stereo/right/image_raw
+  ros_type_name: sensor_msgs/msg/Image
+  gz_type_name: gz.msgs.Image
+  direction: GZ_TO_ROS
+
+# Gazebo publishes CameraInfo directly on the camera_info topic (same pattern as depth)
+- ros_topic_name: /stereo/left/camera_info
+  gz_topic_name: /stereo/left/camera_info
+  ros_type_name: sensor_msgs/msg/CameraInfo
+  gz_type_name: gz.msgs.CameraInfo
+  direction: GZ_TO_ROS
+
+- ros_topic_name: /stereo/right/camera_info
+  gz_topic_name: /stereo/right/camera_info
+  ros_type_name: sensor_msgs/msg/CameraInfo
+  gz_type_name: gz.msgs.CameraInfo
+  direction: GZ_TO_ROS

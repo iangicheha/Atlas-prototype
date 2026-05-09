@@ -1,0 +1,22 @@
+{
+  "names": {
+    "rlai_description": {
+      "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
+    },
+    "rlai_meshes": {
+      "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
+    },
+    "rlai_gazebo": {
+      "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
+    },
+    "rlai_control": {
+      "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
+    },
+    "rlai_lidar_processing": {
+      "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
+    },
+    "rlai_camera_processing": {
+      "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
+    }
+  }
+}

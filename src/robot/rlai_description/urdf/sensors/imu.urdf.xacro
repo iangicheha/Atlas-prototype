@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    IMU sensor mount.
+    Typical placement: centre of base_link at z=0.08 m (above PCB).
+    Topic: /imu/data_raw
+  -->
+  <xacro:macro name="rlai_imu" params="parent xyz rpy">
+
+    <link name="imu_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.04 0.04 0.02"/>
+        </geometry>
+        <material name="green">
+          <color rgba="0.0 0.8 0.0 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.04 0.04 0.02"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.05"/>
+        <!-- Thin PCB — negligible inertia, use small identity-like values -->
+        <inertia ixx="0.000001" ixy="0" ixz="0"
+                 iyy="0.000001" iyz="0"
+                 izz="0.000001"/>
+      </inertial>
+    </link>
+
+    <joint name="imu_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child  link="imu_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

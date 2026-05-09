@@ -1,0 +1,10 @@
+# .dockerignore — Exclude heavy/generated directories from Docker build context
+build/
+install/
+log/
+.git/
+.vscode/
+*.pyc
+__pycache__/
+.colcon/
+maps/*.pgm

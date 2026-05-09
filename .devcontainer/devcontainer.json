@@ -1,0 +1,34 @@
+{
+  "name": "rbot",
+  "dockerFile": "Dockerfile",
+  "runArgs": [
+    "--network=host",
+    "--ipc=host",
+    "--privileged",
+    "-e", "DISPLAY=${localEnv:DISPLAY}",
+    "-v", "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+  ],
+  "containerEnv": {
+    "ROS_DOMAIN_ID": "42",
+    "RMW_IMPLEMENTATION": "rmw_cyclonedds_cpp",
+    "COLCON_HOME": "/ros2_ws/.colcon"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-python.python",
+        "redhat.vscode-xml",
+        "smilerobotics.urdf",
+        "ms-vscode.cpptools-extension-pack",
+        "github.vscode-github-actions"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "C_Cpp.clang_format_style": "file"
+      }
+    }
+  },
+  "postCreateCommand": "bash -c '. /ros2_ws/install/setup.bash 2>/dev/null || true'"
+}

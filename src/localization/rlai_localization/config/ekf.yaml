@@ -1,0 +1,104 @@
+# rlai_localization/config/ekf.yaml
+#
+# robot_localization ekf_node configuration for rbot.
+#
+# This EKF fuses wheel odometry and IMU to produce a smoothed
+# odom → base_footprint transform and /odometry/filtered topic.
+#
+# Transform chain produced by this node:
+#   odom → base_footprint   (published by EKF; diff_drive_controller's
+#                            publish_odom_tf is false so there is no conflict)
+#
+# Sensor covariance basis:
+#   Wheel odom: pose_covariance_diagonal / twist_covariance_diagonal set in
+#               rlai_control/config/controllers.yaml
+#   IMU (Bosch BMI085 class, 200 Hz):
+#     gyro σ = 0.0003394 rad/s/√Hz  → var at 200 Hz ≈ 2.3e-5 rad²/s²
+#     accel σ = 0.004 m/s²/√Hz      → var at 200 Hz ≈ 3.2e-3 m²/s⁴
+#   Values from rlai_description/config/sensor_noise.yaml
+
+ekf_node:
+  ros__parameters:
+    use_sim_time: true
+
+    # ── Coordinate frames ────────────────────────────────────────────────
+    odom_frame:      odom
+    base_link_frame: base_footprint
+    world_frame:     odom          # EKF in "odom mode" (no GPS fusion at this phase)
+    map_frame:       map           # declared but unused until AMCL/GPS provides map→odom
+
+    # ── Transform output ─────────────────────────────────────────────────
+    # EKF is the sole publisher of odom→base_footprint.
+    # diff_drive_controller has enable_odom_tf: false.
+    publish_tf:      true
+    publish_acceleration: false
+
+    # ── Sensor inputs ─────────────────────────────────────────────────────
+
+    # odom0: wheel odometry from diff_drive_controller
+    #   Topic type: nav_msgs/Odometry
+    #   Fused states: x, y, yaw, vx, wz
+    #   [x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az]
+    odom0: /diff_drive_controller/odom
+    odom0_config: [true,  true,  false,   # x, y, z
+                   false, false, true,    # roll, pitch, yaw
+                   true,  false, false,   # vx, vy, vz
+                   false, false, true,    # vroll, vpitch, vyaw
+                   false, false, false]   # ax, ay, az
+    odom0_differential: false
+    odom0_relative:     false
+    odom0_queue_size:   5
+
+    # imu0: filtered IMU from imu_filter_madgwick (200 Hz input, orientation added)
+    #   Topic type: sensor_msgs/Imu  (/imu/data  — produced by imu_filter_madgwick)
+    #   Fused states: yaw rate (from gyro) + ax, ay (from accelerometer)
+    #   Note: orientation from IMU not fused — EKF accumulates yaw from gyro
+    #         to avoid quaternion filter discontinuities in flat-floor navigation.
+    imu0: /imu/data
+    imu0_config: [false, false, false,   # x, y, z
+                  false, false, false,   # roll, pitch, yaw  (not used from IMU)
+                  false, false, false,   # vx, vy, vz
+                  false, false, true,    # vroll, vpitch, vyaw  (gyro z)
+                  true,  true,  false]   # ax, ay, az
+    imu0_differential:        false
+    imu0_relative:            false
+    imu0_remove_gravitational_acceleration: true
+    imu0_queue_size:          10
+
+    # Matrices are flattened row-major 15x15 covariances matching robot_localization state order.
+    # Process noise covariance (Q): [x, y, z, roll, pitch, yaw, vx, vy, vz,
+    #                     vroll, vpitch, vyaw, ax, ay, az]
+    # Conservative values for a slow indoor mobile base.
+    process_noise_covariance: [0.05,  0.0,   0.0,   0.0,   0.0,   0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.05,  0.0,   0.0,   0.0,   0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.06,  0.0,   0.0,   0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.03,  0.0,   0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.03,  0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.06,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.025,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,    0.025,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,    0.0,    0.04,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,    0.0,    0.0,    0.01,   0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,    0.0,    0.0,    0.0,    0.01,   0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.02,   0.0,    0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.01,   0.0,    0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.01,   0.0,
+                               0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.015]
+
+    # ── Initial estimate covariance (P0) ─────────────────────────────────
+    # Diagonal only; represents uncertainty at startup.
+    initial_estimate_covariance: [1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  1e-9, 0.0,  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  1e-9, 0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  1e-9, 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9]

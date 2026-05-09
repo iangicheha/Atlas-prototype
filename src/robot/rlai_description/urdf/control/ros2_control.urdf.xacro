@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    Hardware plugin selection via sim_mode argument:
+      gazebo  → gz_ros2_control/GazeboSimSystem
+      isaac   → topic_based_ros2_control/TopicBasedSystem
+      real    → rlai_hardware/RlaiSystemHardware  (Phase 11)
+  -->
+  <xacro:macro name="rlai_ros2_control" params="sim_mode">
+    <ros2_control name="rlai_bot_system" type="system">
+
+      <hardware>
+        <xacro:if value="${sim_mode == 'gazebo'}">
+          <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </xacro:if>
+        <xacro:if value="${sim_mode == 'isaac'}">
+          <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
+          <param name="joint_commands_topic">/rlai_bot/joint_commands</param>
+          <param name="joint_states_topic">/rlai_bot/joint_states</param>
+        </xacro:if>
+        <xacro:if value="${sim_mode == 'real'}">
+          <plugin>rlai_hardware/RlaiSystemHardware</plugin>
+        </xacro:if>
+      </hardware>
+
+      <!-- Left driven wheel -->
+      <joint name="left_wheel_joint">
+        <command_interface name="velocity">
+          <param name="min">-5.0</param>
+          <param name="max"> 5.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- Right driven wheel -->
+      <joint name="right_wheel_joint">
+        <command_interface name="velocity">
+          <param name="min">-5.0</param>
+          <param name="max"> 5.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <xacro:macro name="caster_state_interfaces" params="name">
+        <joint name="${name}_caster_swivel_joint">
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+        </joint>
+        <joint name="${name}_caster_wheel_joint">
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+        </joint>
+      </xacro:macro>
+
+      <xacro:caster_state_interfaces name="front_left"/>
+      <xacro:caster_state_interfaces name="front_right"/>
+      <xacro:caster_state_interfaces name="rear_left"/>
+      <xacro:caster_state_interfaces name="rear_right"/>
+
+    </ros2_control>
+  </xacro:macro>
+
+</robot>

@@ -1,0 +1,103 @@
+---
+# rbot — C++ code style configuration
+# Matches ament_clang_format defaults (ROS 2 standard: Google + 2-space indent)
+Language: Cpp
+BasedOnStyle: Google
+
+# Indentation
+AccessModifierOffset: -2
+ColumnLimit: 100
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+IndentCaseLabels: false
+IndentWidth: 2
+IndentWrappedFunctionNames: false
+TabWidth: 2
+UseTab: Never
+
+# Alignment
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveMacros: false
+AlignOperands: true
+AlignTrailingComments: true
+
+# Short constructs
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+# Bin packing
+BinPackArguments: true
+BinPackParameters: true
+
+# Braces
+BreakBeforeBraces: Attach
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterObjCDeclaration: false
+  AfterStruct: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false
+
+# Line breaks
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializersBeforeComma: false
+
+# Includes
+SortIncludes: false
+
+# Constructor initializers
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
+# Pointer alignment
+PointerAlignment: Left
+DerivePointerAlignment: false
+
+# Namespaces
+NamespaceIndentation: None
+
+# Penalties
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 200
+
+# Spaces
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Miscellaneous
+Cpp11BracedListStyle: true
+DisableFormat: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+ReflowComments: true
+Standard: C++17
+
+CommentPragmas: "^ IWYU pragma:"
+ForEachMacros:
+  - foreach
+  - Q_FOREACH
+  - BOOST_FOREACH
+...

@@ -1,0 +1,51 @@
+# Build outputs
+build/
+install/
+log/
+.colcon/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+
+# Editor
+.vscode/*
+*.swp
+*.swo
+.idea/
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ROS bags
+*.db3
+*.mcap
+
+# Maps (exclude live-generated SLAM artifacts, keep pre-built reference maps)
+maps/*.posegraph
+maps/*.data
+
+# Gazebo cache
+~/.gz/
+.vscode/
+
+# Internal planning docs
+phases/
+plan/
+.claude/
+./scripts/generate_meshes.py
+./scripts/rbot.svg
+
+
+tests/test_branding.py
+tests/test_run_sim.py
+tests/test_rviz_configs.py
+tests/fixtures/*

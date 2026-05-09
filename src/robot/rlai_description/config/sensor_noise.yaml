@@ -1,0 +1,30 @@
+# Sensor noise parameters shared by simulator integrations.
+# Values match typical real-world sensor datasheets.
+
+lidar_2d:
+  noise_type: gaussian
+  mean: 0.0
+  stddev: 0.01          # metres; ~1 cm at 1 m range
+
+lidar_3d:
+  noise_type: gaussian
+  mean: 0.0
+  stddev: 0.02          # metres; ~2 cm at 1 m range
+
+imu:
+  # Bosch BMI085 / ICM-42688 class values
+  gyroscope_noise_density:  0.0003394    # rad/s / sqrt(Hz)
+  gyroscope_random_walk:    0.000038785  # rad/s² / sqrt(Hz)
+  accelerometer_noise_density: 0.004    # m/s² / sqrt(Hz)
+  accelerometer_random_walk:   0.006    # m/s³ / sqrt(Hz)
+
+depth_camera:
+  # Intel RealSense D435i class values
+  depth_noise_stddev: 0.002             # metres at 1 m; scales with d²
+  rgb_noise_mean:     0.0
+  rgb_noise_stddev:   3.0               # pixel intensity [0–255]
+
+gps:
+  # u-blox F9P RTK fallback (standalone GNSS)
+  position_noise_stddev: 2.5            # metres CEP (standalone)
+  velocity_noise_stddev: 0.05           # m/s

@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    Stereo camera mount (ZED 2 / custom rig).
+    Typical placement: front of base_link at xyz="0.22 0.0 0.18".
+    Baseline: 0.12 m (left offset +0.06 m, right offset -0.06 m along Y).
+    Link names: stereo_left_link / stereo_right_link  (NOT stereo_camera_left/right_link)
+    Topics:
+      /stereo/left/image_raw   /stereo/left/camera_info
+      /stereo/right/image_raw  /stereo/right/camera_info
+  -->
+  <xacro:macro name="rlai_stereo_camera" params="parent xyz rpy">
+
+    <!-- Stereo rig body (bar connecting both lenses) -->
+    <link name="stereo_camera_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.030 0.140 0.030"/>
+        </geometry>
+        <material name="silver">
+          <color rgba="0.8 0.8 0.8 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.030 0.140 0.030"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.159"/>
+        <inertia ixx="0.000020" ixy="0" ixz="0"
+                 iyy="0.000020" iyz="0"
+                 izz="0.000020"/>
+      </inertial>
+    </link>
+
+    <joint name="stereo_camera_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child  link="stereo_camera_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+
+    <!-- Left lens body frame -->
+    <link name="stereo_left_link"/>
+    <joint name="stereo_left_joint" type="fixed">
+      <parent link="stereo_camera_link"/>
+      <child  link="stereo_left_link"/>
+      <origin xyz="0 0.06 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="stereo_left_optical_frame"/>
+    <joint name="stereo_left_optical_joint" type="fixed">
+      <parent link="stereo_left_link"/>
+      <child  link="stereo_left_optical_frame"/>
+      <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+
+    <!-- Right lens body frame (baseline = 0.12 m) -->
+    <link name="stereo_right_link"/>
+    <joint name="stereo_right_joint" type="fixed">
+      <parent link="stereo_camera_link"/>
+      <child  link="stereo_right_link"/>
+      <origin xyz="0 -0.06 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="stereo_right_optical_frame"/>
+    <joint name="stereo_right_optical_joint" type="fixed">
+      <parent link="stereo_right_link"/>
+      <child  link="stereo_right_optical_frame"/>
+      <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

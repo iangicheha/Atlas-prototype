@@ -1,0 +1,9 @@
+# Placeholder for future Isaac Sim integration image.
+
+FROM ros:jazzy-ros-base-noble
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV ROS_DISTRO=jazzy
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+RUN echo "Isaac Sim image placeholder"

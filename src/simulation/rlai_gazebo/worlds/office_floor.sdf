@@ -1,0 +1,384 @@
+<?xml version="1.0"?>
+<!--
+  office_floor.sdf — 30 × 20 m indoor office environment for rbot.
+
+  Layout (top-down, Z-up, origin at centre):
+    - Perimeter: 4 exterior walls, 0.2 m thick, 2.8 m high
+    - Central N-S hallway: 2.0 m wide (x = -1.0 to x = +1.0)
+    - West wing: 3 individual offices (rooms), each ~5 × 4 m, separated by
+      interior walls with 1.0 m doorway openings
+    - East wing: 3 individual offices (rooms), mirrored layout
+    - South reception area: open space with reception desk
+    - North open-plan area: cubicle dividers
+    - Stairwell/lift shaft at north-west corner (solid box obstacle)
+
+  Coordinate origin: centre of floor.
+  Robot spawn: hallway centre (0, 0, 0.1) — clear of all walls.
+-->
+<sdf version="1.11">
+  <world name="office_floor">
+
+    <!-- ── Physics ─────────────────────────────────────────────────────── -->
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- ── System plugins ──────────────────────────────────────────────── -->
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-sensors-system"
+            name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-imu-system"
+            name="gz::sim::systems::Imu"/>
+
+    <!-- ── Lighting — office ceiling lights ────────────────────────────── -->
+    <light name="ceiling_main" type="directional">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 5 0 0 0</pose>
+      <diffuse>0.95 0.95 0.95 1</diffuse>
+      <specular>0.3 0.3 0.3 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name="ceiling_north" type="directional">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 8 5 0 0 0</pose>
+      <diffuse>0.80 0.80 0.80 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name="ceiling_south" type="directional">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 -8 5 0 0 0</pose>
+      <diffuse>0.80 0.80 0.80 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+
+    <!-- ── Ground plane ─────────────────────────────────────────────────── -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material>
+            <ambient>0.88 0.87 0.85 1</ambient>
+            <diffuse>0.88 0.87 0.85 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Office floor tile overlay (30 × 20 m, light-tile look) -->
+    <model name="office_floor">
+      <static>true</static>
+      <pose>0 0 0.001 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>30 20 0.001</size></box></geometry>
+          <material>
+            <ambient>0.92 0.91 0.88 1</ambient>
+            <diffuse>0.92 0.91 0.88 1</diffuse>
+            <specular>0.08 0.08 0.08 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         PERIMETER WALLS  (30 × 20 m, 2.8 m high, 0.2 m thick)
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <model name="wall_north">
+      <static>true</static>
+      <pose>0 10 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>30.4 0.2 2.8</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>30.4 0.2 2.8</size></box></geometry>
+          <material><ambient>0.90 0.90 0.90 1</ambient><diffuse>0.90 0.90 0.90 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_south">
+      <static>true</static>
+      <pose>0 -10 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>30.4 0.2 2.8</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>30.4 0.2 2.8</size></box></geometry>
+          <material><ambient>0.90 0.90 0.90 1</ambient><diffuse>0.90 0.90 0.90 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_east">
+      <static>true</static>
+      <pose>15 0 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.2 20.0 2.8</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.2 20.0 2.8</size></box></geometry>
+          <material><ambient>0.90 0.90 0.90 1</ambient><diffuse>0.90 0.90 0.90 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_west">
+      <static>true</static>
+      <pose>-15 0 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.2 20.0 2.8</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.2 20.0 2.8</size></box></geometry>
+          <material><ambient>0.90 0.90 0.90 1</ambient><diffuse>0.90 0.90 0.90 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         CENTRAL HALLWAY WALLS
+         Hallway spans full N-S length (y = -10 to y = +10), 2.0 m wide
+         (x = -1.0 to x = +1.0).  Interior walls divide rooms from hallway.
+         West hallway wall: x = -1.0   East hallway wall: x = +1.0
+
+         Walls are divided into segments to create doorway openings (1.0 m).
+         Room heights: South rooms at y = -9 to -2 (3 rooms, split at y=-5.7, y=-2.3)
+                       North rooms at y = +2 to +10 (3 rooms, split at y=+4.7, y=+7.3)
+         Doorways: centred on the room partitions, 1.0 m wide.
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── West hallway wall ──────────────────────────────────────────────
+         Full wall from south perimeter to north perimeter, x=-1.0.
+         5 segments to leave 3 doorways (each 1.0 m wide):
+           Doorway 1: centred at y=-7.0   → gap y=-7.5 to y=-6.5
+           Doorway 2: centred at y=-2.0   → gap y=-2.5 to y=-1.5
+           Doorway 3: centred at y=+3.0   → gap y=+2.5 to y=+3.5
+           Doorway 4: centred at y=+8.0   → gap y=+7.5 to y=+8.5
+    -->
+    <model name="west_hall_wall_1"><static>true</static><pose>-1.0 -8.75 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 2.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 2.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="west_hall_wall_2"><static>true</static><pose>-1.0 -4.75 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 4.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 4.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="west_hall_wall_3"><static>true</static><pose>-1.0 0.25 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 4.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 4.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="west_hall_wall_4"><static>true</static><pose>-1.0 5.75 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 4.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 4.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="west_hall_wall_5"><static>true</static><pose>-1.0 9.25 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 1.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 1.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ── East hallway wall (mirrors west) ────────────────────────────── -->
+    <model name="east_hall_wall_1"><static>true</static><pose>1.0 -8.75 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 2.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 2.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="east_hall_wall_2"><static>true</static><pose>1.0 -4.75 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 4.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 4.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="east_hall_wall_3"><static>true</static><pose>1.0 0.25 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 4.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 4.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="east_hall_wall_4"><static>true</static><pose>1.0 5.75 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 4.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 4.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="east_hall_wall_5"><static>true</static><pose>1.0 9.25 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 1.5 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 1.5 2.8</size></box></geometry>
+          <material><ambient>0.88 0.88 0.88 1</ambient><diffuse>0.88 0.88 0.88 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         ROOM PARTITION WALLS (N-S interior dividers for east and west wings)
+         West rooms: x = -1 to x = -15  (14 m wide wing)
+         Partitions at y = -4.3, +1.3, +6.3 (three partitions = four room zones)
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- West wing room partitions — between perimeter (x=-15) and hallway (x=-1) -->
+    <!-- Partition walls do NOT span all 14 m; they stop 1.5 m short of perimeter -->
+    <!-- to leave aisle access near perimeter walls (design choice) -->
+    <model name="west_partition_1"><static>true</static><pose>-8 -4.3 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>11.0 0.15 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>11.0 0.15 2.8</size></box></geometry>
+          <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="west_partition_2"><static>true</static><pose>-8 1.3 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>11.0 0.15 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>11.0 0.15 2.8</size></box></geometry>
+          <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="west_partition_3"><static>true</static><pose>-8 6.3 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>11.0 0.15 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>11.0 0.15 2.8</size></box></geometry>
+          <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- East wing room partitions (mirrored at x=+8) -->
+    <model name="east_partition_1"><static>true</static><pose>8 -4.3 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>11.0 0.15 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>11.0 0.15 2.8</size></box></geometry>
+          <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="east_partition_2"><static>true</static><pose>8 1.3 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>11.0 0.15 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>11.0 0.15 2.8</size></box></geometry>
+          <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="east_partition_3"><static>true</static><pose>8 6.3 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>11.0 0.15 2.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>11.0 0.15 2.8</size></box></geometry>
+          <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         FURNITURE OBSTACLES
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Reception desk (south end, y = -8.5) -->
+    <model name="reception_desk">
+      <static>true</static>
+      <pose>0 -8.5 0.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>3.0 0.8 0.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>3.0 0.8 0.8</size></box></geometry>
+          <material><ambient>0.60 0.45 0.30 1</ambient><diffuse>0.60 0.45 0.30 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Cubicle dividers — north open area (east side, near y=7-9) -->
+    <model name="cubicle_div_1"><static>true</static><pose>5.0 7.5 0.75 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.06 2.5 1.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.06 2.5 1.5</size></box></geometry>
+          <material><ambient>0.40 0.42 0.50 1</ambient><diffuse>0.40 0.42 0.50 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="cubicle_div_2"><static>true</static><pose>8.0 7.5 0.75 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.06 2.5 1.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.06 2.5 1.5</size></box></geometry>
+          <material><ambient>0.40 0.42 0.50 1</ambient><diffuse>0.40 0.42 0.50 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="cubicle_div_3"><static>true</static><pose>11.0 7.5 0.75 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.06 2.5 1.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.06 2.5 1.5</size></box></geometry>
+          <material><ambient>0.40 0.42 0.50 1</ambient><diffuse>0.40 0.42 0.50 1</diffuse></material></visual>
+      </link>
+    </model>
+    <!-- Cross dividers for cubicle bays -->
+    <model name="cubicle_div_h1"><static>true</static><pose>6.5 8.75 0.75 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>3.0 0.06 1.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>3.0 0.06 1.5</size></box></geometry>
+          <material><ambient>0.40 0.42 0.50 1</ambient><diffuse>0.40 0.42 0.50 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Stairwell / lift shaft — NW corner -->
+    <model name="lift_shaft">
+      <static>true</static>
+      <pose>-12.5 8.0 1.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>4.0 4.0 2.8</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>4.0 4.0 2.8</size></box></geometry>
+          <material><ambient>0.60 0.60 0.62 1</ambient><diffuse>0.60 0.60 0.62 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Desk in west office room (y=-7 to -4.3, x=-15 to -1) -->
+    <model name="desk_w1"><static>true</static><pose>-8 -7.0 0.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.6 0.8 0.8</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.6 0.8 0.8</size></box></geometry>
+          <material><ambient>0.60 0.45 0.30 1</ambient><diffuse>0.60 0.45 0.30 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Filing cabinet cluster in east office room -->
+    <model name="filing_cabinets"><static>true</static><pose>12 3.5 0.7 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.5 2.0 1.4</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.5 2.0 1.4</size></box></geometry>
+          <material><ambient>0.50 0.50 0.52 1</ambient><diffuse>0.50 0.50 0.52 1</diffuse></material></visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

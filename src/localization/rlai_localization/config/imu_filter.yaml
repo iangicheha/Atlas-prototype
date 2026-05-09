@@ -1,0 +1,45 @@
+# imu_filter.yaml
+#
+# Configuration for imu_filter_madgwick.
+#
+# Reads:    /imu/data_raw   (sensor_msgs/Imu — no orientation, raw gyro+accel)
+# Publishes:/imu/data       (sensor_msgs/Imu — with quaternion orientation from
+#                            Madgwick complementary filter)
+#
+# Used in localization.launch.py BEFORE the robot_localization EKF so that
+# downstream consumers (e.g. rviz2, nav2) can visualise robot orientation,
+# while the EKF fuses only gyro-z + accel x/y (not the filter quaternion).
+#
+# References:
+#   https://github.com/CCNYRoboticsLab/imu_tools (ROS 2 port)
+#   Madgwick (2010) — An efficient orientation filter for inertial and
+#   inertial/magnetic sensor arrays
+
+imu_filter_madgwick:
+  ros__parameters:
+    use_sim_time: true
+
+    # No magnetometer available — use accelerometer + gyroscope only
+    use_mag: false
+
+    # Do not publish the filter's world→IMU transform (EKF owns TF)
+    publish_tf: false
+
+    # World frame convention: ENU (East-North-Up), matches ROS REP-103
+    world_frame: "enu"
+
+    # Madgwick gain (β) — controls gyroscope drift correction rate.
+    # Lower value = smoother orientation, higher latency drift correction.
+    # 0.1 is safe for a 200 Hz IMU without magnetometer.
+    gain: 0.1
+
+    # Gyroscope drift compensation rate (ζ). 0.0 disables bias estimation
+    # (acceptable for short sessions; re-enable if long-term drift observed).
+    zeta: 0.0
+
+    # Orientation covariance σ (rad²) injected into output Imu.orientation_covariance.
+    # Set 0.0 so robot_localization can override with its own covariance model.
+    orientation_stddev: 0.0
+
+    # Stateless mode off — filter maintains internal state across samples
+    stateless: false

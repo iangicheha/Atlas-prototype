@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    use_sim_time: true
+
+# Node-specific parameters override the global defaults above.
+pointcloud_filter:
+  ros__parameters:
+    use_sim_time: true
+    # Voxel-grid leaf size (metres) — 5 cm keeps enough detail for obstacle detection
+    leaf_size: 0.05
+    # Height passthrough bounds relative to the sensor frame (+z up).
+    # -0.10 m trims floor returns; 2.00 m removes ceiling / high-overhead hits.
+    z_min: -0.10
+    z_max:  2.00

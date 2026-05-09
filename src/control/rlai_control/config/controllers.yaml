@@ -1,0 +1,65 @@
+# ros2_control controllers for differential drive and joint state publishing.
+# diff_drive_controller consumes /diff_drive_controller/cmd_vel and publishes /wheel_odom.
+
+controller_manager:
+  ros__parameters:
+    update_rate: 100      # Hz
+    use_sim_time: true
+
+    diff_drive_controller:
+      type: diff_drive_controller/DiffDriveController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+diff_drive_controller:
+  ros__parameters:
+    use_sim_time: true
+
+    # Joint names — must match URDF joint names exactly
+    # See urdf/base/wheels.urdf.xacro: joint name="${prefix}_wheel_joint"
+    left_wheel_names:  [left_wheel_joint]
+    right_wheel_names: [right_wheel_joint]
+
+    # Physical dimensions — must match URDF wheel macros
+    wheel_separation: 0.35    # meters  (between wheel centrelines)
+    wheel_radius:     0.0625  # meters
+
+    # Odometry
+    odom_frame_id:   odom
+    base_frame_id:   base_footprint
+    publish_odom:    true
+    open_loop:       false
+    position_feedback: true
+    enable_odom_tf:  false    # EKF publishes odom->base_footprint; avoid duplicate TF.
+    odom_publish_rate: 50     # Hz
+    tf_frame_prefix_enable: false
+
+    pose_covariance_diagonal:  [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+    twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+
+    # Velocity limits reflect robot hardware constraints.
+    linear:
+      x:
+        has_velocity_limits:    true
+        max_velocity:  0.5      # m/s  (forward)
+        min_velocity: -0.35     # m/s  (reverse)
+        has_acceleration_limits: true
+        max_acceleration:  1.0  # m/s²
+        min_acceleration: -1.0
+        has_jerk_limits: false
+
+    angular:
+      z:
+        has_velocity_limits:    true
+        max_velocity:  1.9      # rad/s
+        min_velocity: -1.9
+        has_acceleration_limits: true
+        max_acceleration:  3.2  # rad/s²
+        min_acceleration: -3.2
+        has_jerk_limits: false
+
+joint_state_broadcaster:
+  ros__parameters:
+    use_sim_time: true
+    # Publishes all joints by default; no extra config required.

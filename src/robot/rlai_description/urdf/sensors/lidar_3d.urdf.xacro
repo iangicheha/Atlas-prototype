@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    3-D LiDAR sensor mount (Velodyne VLP-16 default).
+    Typical placement: top-centre of base_link at xyz="0.0 0.0 0.30".
+    Topics: /lidar_3d/points_raw (raw PointCloud2)
+            /lidar_3d/points     (filtered, Phase 5)
+  -->
+  <xacro:macro name="rlai_lidar_3d" params="parent xyz rpy model">
+
+    <link name="lidar_3d_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.05" length="0.086"/>
+        </geometry>
+        <material name="dark_blue">
+          <color rgba="0.0 0.1 0.5 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.05" length="0.086"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.83"/>
+        <!--
+          Solid cylinder (r=0.05, l=0.086, m=0.83):
+            Ixx=Iyy = m(3r²+l²)/12 = 0.83×(0.0075+0.0074)/12 = 0.001030
+            Izz     = mr²/2         = 0.83×0.0025/2           = 0.001038
+        -->
+        <inertia ixx="0.001030" ixy="0" ixz="0"
+                 iyy="0.001030" iyz="0"
+                 izz="0.001038"/>
+      </inertial>
+    </link>
+
+    <joint name="lidar_3d_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child  link="lidar_3d_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

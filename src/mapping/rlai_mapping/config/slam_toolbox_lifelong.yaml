@@ -1,0 +1,88 @@
+# rlai_mapping/config/slam_toolbox_lifelong.yaml
+#
+# slam_toolbox lifelong_slam_toolbox_node configuration for rbot.
+#
+# Mode: lifelong — robot continually updates the same map across multiple
+#       sessions without re-zeroing.  Suitable for long-running deployments
+#       where the environment changes slowly (furniture rearrangement, etc.).
+#
+# Key differences from online_async:
+#   • Executable: lifelong_slam_toolbox_node   (not async_slam_toolbox_node)
+#   • mode: lifelong
+#   • Uses lifelong_search_use_tree and lifelong_minimum_score to merge
+#     new scans into the existing map rather than always extending it.
+#   • Serialise/deserialise the pose-graph between sessions:
+#       ros2 service call /slam_toolbox/serialize_map  slam_toolbox/srv/SerializePoseGraph "{filename: '/maps/rlai_lifelong'}"
+#       ros2 service call /slam_toolbox/deserialize_map slam_toolbox/srv/DeserializePoseGraph "{filename: '/maps/rlai_lifelong', match_type: 1, initial_pose: ...}"
+#
+# TF chain (same as online_async):
+#   map → odom  (slam_toolbox)
+#   odom → base_footprint  (EKF — do NOT republish here)
+
+slam_toolbox:
+  ros__parameters:
+    use_sim_time: true
+
+    mode: lifelong
+
+    # Lifelong-specific scan matching parameters
+    # Use a search tree to accelerate scan matching against the accumulated graph
+    lifelong_search_use_tree: false
+    # Minimum score for a scan to be accepted as a new node in lifelong mode.
+    # Reject low-quality scans to prevent map corruption.
+    lifelong_minimum_score: 0.1
+    # IoU threshold used to decide whether a scan overlaps an existing keyframe enough to merge.
+    lifelong_iou_match: 0.85
+    # Max distance a scan can be from the last pose-graph node before inserting
+    # a new node (metres)
+    minimum_travel_distance: 0.3
+    minimum_travel_heading: 0.349     # radians (~20°)
+    # Time between scan processing attempts (seconds).  0.0 = process every scan.
+    scan_buffer_size: 10
+    scan_buffer_maximum_scan_distance: 15.0
+
+    # Solver configuration
+    solver_plugin:            solver_plugins::CeresSolver
+    ceres_linear_solver:      SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner:     SCHUR_JACOBI
+    ceres_trust_strategy:     LEVENBERG_MARQUARDT
+    ceres_dogleg_type:        TRADITIONAL_DOGLEG
+    ceres_loss_function:      None
+
+    scan_topic:               /scan
+
+    # Coordinate frames
+    odom_frame:               odom
+    map_frame:                map
+    base_frame:               base_footprint
+
+    use_scan_matching:        true
+    use_scan_barycenter:      true
+
+    # Transform output
+    transform_publish_period: 0.02     # 50 Hz
+    tf_buffer_duration:       30.0
+
+    # Map parameters
+    resolution:               0.05     # 5 cm/cell
+    map_update_interval:      5.0
+
+    # Correlation and loop closure
+    # Coarse grid search for loop closure candidates
+    loop_search_space_dimension:        8.0
+    loop_search_space_resolution:       0.05
+    loop_search_space_smear_deviation:  0.03
+    loop_match_minimum_chain_size:      10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    loop_match_minimum_response_fine:   0.45
+    # Distance and angle thresholds triggering loop closure search
+    distance_variance_penalty:          0.5
+    angle_variance_penalty:             1.0
+    fine_search_angle_offset:           0.00349   # ~0.2°
+    coarse_search_angle_offset:         0.349     # ~20°
+    coarse_angle_resolution:            0.0349    # ~2°
+
+    # Map serialisation
+    # Lifelong maps should be serialised regularly to survive restarts
+    # Use the service interface above rather than map_saver_server.

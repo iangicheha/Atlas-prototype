@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Payload deck collision uses only the top plate; posts are ignored to keep navigation inflation conservative while preserving 2-D LiDAR clearance. -->
+
+  <xacro:macro name="rlai_payload_platform" params="parent">
+
+    <link name="payload_platform_link">
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://rlai_meshes/meshes/payload_platform.stl"
+                scale="0.001 0.001 0.001"/>
+        </geometry>
+        <!-- RViz material; Gazebo colour set in gazebo_materials.urdf.xacro -->
+        <material name="platform_aluminium">
+          <color rgba="0.80 0.80 0.82 1.0"/>
+        </material>
+      </visual>
+
+      <collision>
+        <!-- Centre of 440×320×20 mm plate at z = 0.220 + 0.010 = 0.230 m -->
+        <origin xyz="0 0 0.230" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.440 0.320 0.020"/>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <origin xyz="0 0 0.230" rpy="0 0 0"/>
+        <mass value="2.5"/>
+        <inertia ixx="0.02142" ixy="0.0" ixz="0.0"
+                 iyy="0.04042" iyz="0.0"
+                 izz="0.06167"/>
+      </inertial>
+
+    </link>
+
+    <joint name="payload_platform_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child  link="payload_platform_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>

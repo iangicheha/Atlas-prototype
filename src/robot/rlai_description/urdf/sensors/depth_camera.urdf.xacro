@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    RGB-D depth camera mount (Intel RealSense D435i default).
+    Typical placement: front of base_link at xyz="0.22 0.0 0.18".
+    Topics:
+      /depth_camera/color/image_raw       (RGB)
+      /depth_camera/depth/image_rect_raw  (depth)
+      /depth_camera/depth/points          (PointCloud2)
+    Optical frames follow REP-103 convention (z-forward, x-right, y-down).
+  -->
+  <xacro:macro name="rlai_depth_camera" params="parent xyz rpy model">
+
+    <link name="depth_camera_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://rlai_meshes/meshes/depth_camera_housing.stl"
+                scale="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="camera_dark_gray">
+          <color rgba="0.12 0.12 0.14 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.025 0.090 0.025"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.072"/>
+        <!-- Thin bar — treat as box: m(b²+c²)/12 etc. -->
+        <inertia ixx="0.000010" ixy="0" ixz="0"
+                 iyy="0.000010" iyz="0"
+                 izz="0.000010"/>
+      </inertial>
+    </link>
+
+    <joint name="depth_camera_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child  link="depth_camera_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+
+    <!-- RGB optical frame (REP-103: z-forward, x-right, y-down) -->
+    <link name="depth_camera_rgb_optical_frame"/>
+    <joint name="depth_camera_rgb_optical_joint" type="fixed">
+      <parent link="depth_camera_link"/>
+      <child  link="depth_camera_rgb_optical_frame"/>
+      <!-- Rotate from body (x-forward) to optical (z-forward): pitch -90°, roll -90° -->
+      <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+
+    <!-- Depth optical frame -->
+    <link name="depth_camera_depth_optical_frame"/>
+    <joint name="depth_camera_depth_optical_joint" type="fixed">
+      <parent link="depth_camera_link"/>
+      <child  link="depth_camera_depth_optical_frame"/>
+      <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

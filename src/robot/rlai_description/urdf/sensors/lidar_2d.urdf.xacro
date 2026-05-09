@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    2-D LiDAR sensor mount (RPLIDAR A3 default; Hokuyo UST-20LX also supported).
+    Typical placement: front-top of base_link at xyz="0.18 0.0 0.18".
+    Topic: /scan  (LaserScan)
+  -->
+  <xacro:macro name="rlai_lidar_2d" params="parent xyz rpy model">
+
+    <link name="lidar_2d_link">
+      <!-- Main housing — flat dark cylinder (RPLIDAR A3: ~76mm dia, 41mm tall) -->
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.038" length="0.041"/>
+        </geometry>
+        <material name="lidar_housing">
+          <color rgba="0.12 0.12 0.14 1.0"/>
+        </material>
+      </visual>
+      <!-- Scanning ring — thin bright band at mid-height -->
+      <visual>
+        <origin xyz="0 0 0.005" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.040" length="0.006"/>
+        </geometry>
+        <material name="lidar_ring">
+          <color rgba="0.85 0.85 0.10 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.040" length="0.041"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.17"/>
+        <inertia ixx="0.000137" ixy="0" ixz="0"
+                 iyy="0.000137" iyz="0"
+                 izz="0.000136"/>
+      </inertial>
+    </link>
+
+    <joint name="lidar_2d_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child  link="lidar_2d_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

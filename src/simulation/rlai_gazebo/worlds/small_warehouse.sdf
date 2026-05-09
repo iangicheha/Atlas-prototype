@@ -1,0 +1,474 @@
+<?xml version="1.0"?>
+<!--
+  small_warehouse.sdf — 20 × 20 m warehouse environment for rbot.
+
+  Layout (top-down, Z-up):
+    - Perimeter: 4 walls, 0.2 m thick, 2.5 m high
+    - 6 static box obstacles distributed across quadrants
+    - Corridor A: N-S passage on east side, 1.2 m clear width (x = 7.1 – 8.3)
+    - Corridor B: E-W passage on south side, 1.2 m clear width (y = -7.1 – -8.3)
+    - 4 cylindrical pillars at (±4, ±6.5), r = 0.15 m, h = 2.5 m
+
+  Robot spawn: origin (0, 0, 0.1) — clear of all geometry.
+-->
+<sdf version="1.11">
+  <world name="small_warehouse">
+
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"/>
+
+    <plugin filename="gz-sim-sensors-system"
+            name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster"/>
+
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"/>
+
+    <plugin filename="gz-sim-imu-system"
+            name="gz::sim::systems::Imu"/>
+
+    <plugin filename="gz-sim-navsat-system"
+            name="gz::sim::systems::NavSat"/>
+
+    <!-- NavSat requires a WGS-84 anchor for converting world poses to lat/lon/alt. -->
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>30.3072</latitude_deg>
+      <longitude_deg>-97.7560</longitude_deg>
+      <elevation>160.0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Fill light from opposite angle — reduces harsh shadows indoors -->
+    <light name="fill" type="directional">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.4 0.4 0.4 1</diffuse>
+      <specular>0.0 0.0 0.0 1</specular>
+      <direction>0.5 -0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.70 0.70 0.70 1</ambient>
+            <diffuse>0.70 0.70 0.70 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Visual-only warehouse floor; ground_plane provides collision. -->
+    <model name="warehouse_floor">
+      <static>true</static>
+      <pose>0 0 0.001 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box><size>20 20 0.001</size></box>
+          </geometry>
+          <material>
+            <ambient>0.55 0.55 0.60 1</ambient>
+            <diffuse>0.55 0.55 0.60 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         PERIMETER WALLS
+         North/south extend 20.4 m to close the corners with east/west.
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <model name="wall_north">
+      <static>true</static>
+      <pose>0 10 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>20.4 0.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>20.4 0.2 2.5</size></box></geometry>
+          <material>
+            <ambient>0.85 0.85 0.85 1</ambient>
+            <diffuse>0.85 0.85 0.85 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_south">
+      <static>true</static>
+      <pose>0 -10 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>20.4 0.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>20.4 0.2 2.5</size></box></geometry>
+          <material>
+            <ambient>0.85 0.85 0.85 1</ambient>
+            <diffuse>0.85 0.85 0.85 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_east">
+      <static>true</static>
+      <pose>10 0 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.2 20.0 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.2 20.0 2.5</size></box></geometry>
+          <material>
+            <ambient>0.85 0.85 0.85 1</ambient>
+            <diffuse>0.85 0.85 0.85 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_west">
+      <static>true</static>
+      <pose>-10 0 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.2 20.0 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.2 20.0 2.5</size></box></geometry>
+          <material>
+            <ambient>0.85 0.85 0.85 1</ambient>
+            <diffuse>0.85 0.85 0.85 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         BOX OBSTACLES  (6 static boxes, varied sizes 0.5–1.0 m)
+         Pose z = half the box height so the base rests on the floor.
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- NE quadrant -->
+    <model name="obstacle_1">
+      <static>true</static>
+      <pose>3.0 3.0 0.40 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.80 0.80 0.80</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.80 0.80 0.80</size></box></geometry>
+          <material>
+            <ambient>0.60 0.65 0.70 1</ambient>
+            <diffuse>0.60 0.65 0.70 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- NW quadrant -->
+    <model name="obstacle_2">
+      <static>true</static>
+      <pose>-3.0 3.0 0.30 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.60 0.60 0.60</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.60 0.60 0.60</size></box></geometry>
+          <material>
+            <ambient>0.60 0.65 0.70 1</ambient>
+            <diffuse>0.60 0.65 0.70 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- SE quadrant — elongated along X -->
+    <model name="obstacle_3">
+      <static>true</static>
+      <pose>5.0 -4.0 0.40 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.00 0.50 0.80</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.00 0.50 0.80</size></box></geometry>
+          <material>
+            <ambient>0.60 0.65 0.70 1</ambient>
+            <diffuse>0.60 0.65 0.70 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- SW quadrant — elongated along Y -->
+    <model name="obstacle_4">
+      <static>true</static>
+      <pose>-5.0 -3.0 0.40 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.50 1.00 0.80</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.50 1.00 0.80</size></box></geometry>
+          <material>
+            <ambient>0.60 0.65 0.70 1</ambient>
+            <diffuse>0.60 0.65 0.70 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- South-centre -->
+    <model name="obstacle_5">
+      <static>true</static>
+      <pose>2.0 -6.0 0.35 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.70 0.70 0.70</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.70 0.70 0.70</size></box></geometry>
+          <material>
+            <ambient>0.60 0.65 0.70 1</ambient>
+            <diffuse>0.60 0.65 0.70 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- North-west — flat crate shape -->
+    <model name="obstacle_6">
+      <static>true</static>
+      <pose>-4.0 5.0 0.40 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.90 0.40 0.80</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.90 0.40 0.80</size></box></geometry>
+          <material>
+            <ambient>0.60 0.65 0.70 1</ambient>
+            <diffuse>0.60 0.65 0.70 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         CORRIDORS  (2 narrow passages, each formed by 2 parallel walls)
+
+         Corridor A — N-S passage on east side
+           West wall centre  x = 7.0  →  east face at x = 7.1
+           East wall centre  x = 8.4  →  west face at x = 8.3
+           Clear passage width = 1.2 m
+
+         Corridor B — E-W passage on south side
+           North wall centre y = -7.0  →  south face at y = -7.1
+           South wall centre y = -8.4  →  north face at y = -8.3
+           Clear passage width = 1.2 m
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <model name="corridor_a_wall_west">
+      <static>true</static>
+      <pose>7.0 0 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.2 12.0 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.2 12.0 2.5</size></box></geometry>
+          <material>
+            <ambient>0.80 0.80 0.82 1</ambient>
+            <diffuse>0.80 0.80 0.82 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="corridor_a_wall_east">
+      <static>true</static>
+      <pose>8.4 0 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.2 12.0 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.2 12.0 2.5</size></box></geometry>
+          <material>
+            <ambient>0.80 0.80 0.82 1</ambient>
+            <diffuse>0.80 0.80 0.82 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="corridor_b_wall_north">
+      <static>true</static>
+      <pose>0 -7.0 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>12.0 0.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>12.0 0.2 2.5</size></box></geometry>
+          <material>
+            <ambient>0.80 0.80 0.82 1</ambient>
+            <diffuse>0.80 0.80 0.82 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="corridor_b_wall_south">
+      <static>true</static>
+      <pose>0 -8.4 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>12.0 0.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>12.0 0.2 2.5</size></box></geometry>
+          <material>
+            <ambient>0.80 0.80 0.82 1</ambient>
+            <diffuse>0.80 0.80 0.82 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         PILLARS  (4 cylinders, symmetric at (±4, ±6.5))
+         radius = 0.15 m, height = 2.5 m, centre at z = 1.25
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <model name="pillar_ne">
+      <static>true</static>
+      <pose>4.0 6.5 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>2.5</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>2.5</length></cylinder></geometry>
+          <material>
+            <ambient>0.50 0.50 0.55 1</ambient>
+            <diffuse>0.50 0.50 0.55 1</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pillar_nw">
+      <static>true</static>
+      <pose>-4.0 6.5 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>2.5</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>2.5</length></cylinder></geometry>
+          <material>
+            <ambient>0.50 0.50 0.55 1</ambient>
+            <diffuse>0.50 0.50 0.55 1</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pillar_se">
+      <static>true</static>
+      <pose>4.0 -6.5 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>2.5</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>2.5</length></cylinder></geometry>
+          <material>
+            <ambient>0.50 0.50 0.55 1</ambient>
+            <diffuse>0.50 0.50 0.55 1</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pillar_sw">
+      <static>true</static>
+      <pose>-4.0 -6.5 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>2.5</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>2.5</length></cylinder></geometry>
+          <material>
+            <ambient>0.50 0.50 0.55 1</ambient>
+            <diffuse>0.50 0.50 0.55 1</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

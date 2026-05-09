@@ -1,0 +1,44 @@
+# Configuration shared by joy_linux_node and teleop_twist_joy.
+# Button / axis layout (PS4 / Xbox compatible):
+#   Axis 0 — left stick horizontal  (positive = right)
+#   Axis 1 — left stick vertical    (positive = up → forward)
+#   Axis 2 — right stick horizontal (some controllers)
+#   Axis 3 — right stick vertical
+#   Button 4 — L1  → enable (must hold to move)
+#   Button 5 — R1  → turbo  (faster speed envelope)
+#
+# Velocity limits mirror diff_drive_controller / velocity_smoother:
+#   forward:  0.5 m/s  (turbo same — smoother enforces the cap)
+#   angular:  1.9 rad/s
+
+joy_node:
+  ros__parameters:
+    device_id: 0
+    deadzone: 0.10            # ±10 % stick deadband
+    autorepeat_rate: 20.0     # Hz — publishes even when stick is held still
+
+teleop_twist_joy:
+  ros__parameters:
+    # Axes
+    axis_linear:
+      x: 1                    # left stick vertical  → forward / backward
+    axis_angular:
+      yaw: 0                  # left stick horizontal → turn
+
+    # Normal speed envelope
+    scale_linear:
+      x: 0.4                  # m/s   (comfortable cruise)
+    scale_angular:
+      yaw: 1.2                # rad/s (comfortable turn)
+
+    # Turbo speed envelope
+    scale_linear_turbo:
+      x: 0.5                  # m/s   (hardware max, velocity_smoother caps it)
+    scale_angular_turbo:
+      yaw: 1.9                # rad/s (hardware max)
+
+    # Buttons
+    enable_button: 4          # L1 — dead-man switch; must hold to move
+    enable_turbo_button: 5    # R1 — turbo while held (requires enable_button too)
+    require_enable_button: true
+    publish_stamped_twist: true    # required by velocity_smoother and diff_drive_controller

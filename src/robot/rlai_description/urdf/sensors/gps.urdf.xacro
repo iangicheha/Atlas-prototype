@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    GPS / GNSS antenna mount.
+    Typical placement: top of base_link at xyz="0.0 0.0 0.35".
+    Topic: /gps/fix  (sensor_msgs/NavSatFix)
+  -->
+  <xacro:macro name="rlai_gps" params="parent xyz rpy">
+
+    <link name="gps_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.025" length="0.015"/>
+        </geometry>
+        <material name="white">
+          <color rgba="0.9 0.9 0.9 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.025" length="0.015"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.030"/>
+        <inertia ixx="0.000001" ixy="0" ixz="0"
+                 iyy="0.000001" iyz="0"
+                 izz="0.000001"/>
+      </inertial>
+    </link>
+
+    <joint name="gps_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child  link="gps_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+
+  </xacro:macro>
+</robot>
