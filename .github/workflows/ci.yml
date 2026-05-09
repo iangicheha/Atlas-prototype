@@ -61,7 +61,7 @@ jobs:
         run: |
           # Limit linting to repository packages to avoid generated ROS workspace files.
           cd ros2_ws
-          flake8 src/rbot/src \
+          python3 -m flake8 src/rbot/src \
             --max-line-length=100 \
             --extend-ignore=E203 \
             --exclude=__pycache__
