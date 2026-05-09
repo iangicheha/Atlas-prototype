@@ -17,6 +17,18 @@
 
 ---
 
+<p align="center">
+  <a href="https://youtu.be/d5kBEGfuiHQ">
+    <img src="https://img.youtube.com/vi/d5kBEGfuiHQ/maxresdefault.jpg" alt="Watch the rbot open-source ROS 2 AMR simulation demo" width="720">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/d5kBEGfuiHQ"></a>
+</p>
+
+---
+
 ## Overview
 
 `rbot` is a complete simulation-first Autonomous Mobile Robot (AMR) stack. It brings together robot description, Gazebo simulation, `ros2_control`, teleoperation, perception, localization, mapping, and Nav2 navigation in a modular ROS 2 workspace.

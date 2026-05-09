@@ -36,8 +36,8 @@ def generate_launch_description():
     pkg = FindPackageShare('rlai_localization')
 
     imu_filter_yaml = PathJoinSubstitution([pkg, 'config', 'imu_filter.yaml'])
-    ekf_yaml        = PathJoinSubstitution([pkg, 'config', 'ekf.yaml'])
-    amcl_yaml       = PathJoinSubstitution([pkg, 'config', 'amcl.yaml'])
+    ekf_yaml = PathJoinSubstitution([pkg, 'config', 'ekf.yaml'])
+    amcl_yaml = PathJoinSubstitution([pkg, 'config', 'amcl.yaml'])
 
     # Launch arguments
     declared_args = [

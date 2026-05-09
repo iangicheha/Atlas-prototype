@@ -40,7 +40,9 @@ def _as_bool(context, name):
 
 def _validate_global_localization(context):
     if _as_bool(context, "mapping_enabled") and _as_bool(context, "use_amcl"):
-        raise RuntimeError("mapping_enabled and use_amcl cannot both be true because both publish map->odom")
+        raise RuntimeError(
+            "mapping_enabled and use_amcl cannot both be true because both publish map->odom"
+        )
     return []
 
 
@@ -68,7 +70,7 @@ def generate_launch_description():
         DeclareLaunchArgument("lidar_2d_enabled",     default_value="true"),
         DeclareLaunchArgument("lidar_3d_enabled",     default_value="false"),
         DeclareLaunchArgument("depth_camera_enabled", default_value="true"),
-        DeclareLaunchArgument("stereo_camera_enabled",default_value="false"),
+        DeclareLaunchArgument("stereo_camera_enabled", default_value="false"),
         DeclareLaunchArgument("imu_enabled",          default_value="true"),
         DeclareLaunchArgument("gps_enabled",          default_value="false"),
         DeclareLaunchArgument(
@@ -107,7 +109,10 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "slam_rviz_enabled",
             default_value="false",
-            description="Launch RViz2 with SLAM overhead view (only used when mapping_enabled:=true)",
+            description=(
+                "Launch RViz2 with SLAM overhead view "
+                "(only used when mapping_enabled:=true)"
+            ),
         ),
     ]
 
@@ -158,8 +163,8 @@ def generate_launch_description():
             )
         ),
         launch_arguments={
-            "use_sim_time":  "true",
-            "use_amcl":      LaunchConfiguration("use_amcl"),
+            "use_sim_time": "true",
+            "use_amcl": LaunchConfiguration("use_amcl"),
             "map_yaml_file": LaunchConfiguration("map_yaml_file"),
         }.items(),
         condition=IfCondition(LaunchConfiguration("localization_enabled")),
@@ -168,7 +173,11 @@ def generate_launch_description():
     camera_processing_bringup = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
-                [FindPackageShare("rlai_camera_processing"), "launch", "camera_processing.launch.py"]
+                [
+                    FindPackageShare("rlai_camera_processing"),
+                    "launch",
+                    "camera_processing.launch.py",
+                ]
             )
         ),
         launch_arguments={

@@ -27,7 +27,8 @@ Prerequisites:
 
 Usage:
   ros2 launch rlai_localization localization.launch.py
-  ros2 launch rlai_localization localization.launch.py use_amcl:=true map_yaml_file:=/path/to/map.yaml
+  ros2 launch rlai_localization localization.launch.py use_amcl:=true \
+    map_yaml_file:=/path/to/map.yaml
 """
 
 from launch import LaunchDescription
@@ -42,8 +43,8 @@ def generate_launch_description():
     pkg = FindPackageShare('rlai_localization')
 
     imu_filter_yaml = PathJoinSubstitution([pkg, 'config', 'imu_filter.yaml'])
-    ekf_yaml        = PathJoinSubstitution([pkg, 'config', 'ekf.yaml'])
-    amcl_yaml       = PathJoinSubstitution([pkg, 'config', 'amcl.yaml'])
+    ekf_yaml = PathJoinSubstitution([pkg, 'config', 'ekf.yaml'])
+    amcl_yaml = PathJoinSubstitution([pkg, 'config', 'amcl.yaml'])
 
     # Launch arguments
     declared_args = [
@@ -151,4 +152,3 @@ def generate_launch_description():
             lifecycle_manager,
         ]
     )
-

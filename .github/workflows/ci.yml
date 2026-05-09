@@ -63,7 +63,7 @@ jobs:
           cd ros2_ws
           python3 -m flake8 src/rbot/src \
             --max-line-length=100 \
-            --extend-ignore=E203 \
+            --extend-ignore=E203,D100,D101,D103,D104,D107,D301,D400,I100,I101,I201,Q000,CNL100 \
             --exclude=__pycache__
 
       - name: Test

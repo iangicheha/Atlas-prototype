@@ -1,6 +1,9 @@
-from setuptools import setup, find_packages
+"""Package setup for rlai_utils."""
+
 import os
 from glob import glob
+
+from setuptools import find_packages, setup
 
 package_name = 'rlai_utils'
 

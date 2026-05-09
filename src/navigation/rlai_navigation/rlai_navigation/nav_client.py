@@ -17,15 +17,12 @@ the final result (succeeded / failed / cancelled) to stdout.
 
 import math
 import sys
-import time
 
+from geometry_msgs.msg import PoseStamped, Quaternion
+from nav2_msgs.action import FollowWaypoints, NavigateToPose
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
-from rclpy.parameter import Parameter
-
-from geometry_msgs.msg import PoseStamped, Quaternion
-from nav2_msgs.action import NavigateToPose, FollowWaypoints
 
 
 def yaw_to_quaternion(yaw: float) -> Quaternion:
@@ -70,7 +67,7 @@ class NavClient(Node):
         self.declare_parameter('mode', 'single')  # 'single' | 'patrol'
 
         self._nav_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
-        self._wp_client  = ActionClient(self, FollowWaypoints, 'follow_waypoints')
+        self._wp_client = ActionClient(self, FollowWaypoints, 'follow_waypoints')
 
         self._result_received = False
         self._success = False
@@ -80,8 +77,7 @@ class NavClient(Node):
 
         Returns True if the robot reached the goal, False otherwise.
         """
-        self.get_logger().info(
-            f'Waiting for navigate_to_pose action server …')
+        self.get_logger().info('Waiting for navigate_to_pose action server …')
         if not self._nav_client.wait_for_server(timeout_sec=10.0):
             self.get_logger().error('navigate_to_pose action server not available.')
             return False
@@ -180,8 +176,8 @@ def main(args=None) -> None:
     if mode == 'patrol':
         node.patrol()
     else:
-        x   = node.get_parameter('x').get_parameter_value().double_value
-        y   = node.get_parameter('y').get_parameter_value().double_value
+        x = node.get_parameter('x').get_parameter_value().double_value
+        y = node.get_parameter('y').get_parameter_value().double_value
         yaw = node.get_parameter('yaw').get_parameter_value().double_value
         success = node.navigate_to(x, y, yaw)
         sys.exit(0 if success else 1)

@@ -1,6 +1,6 @@
-from setuptools import setup, find_packages
-import os
-from glob import glob
+"""Package setup for rlai_isaac."""
+
+from setuptools import find_packages, setup
 
 package_name = 'rlai_isaac'
 

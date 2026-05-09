@@ -34,7 +34,7 @@ def generate_launch_description():
     pkg = FindPackageShare("rlai_control")
 
     controllers_yaml = PathJoinSubstitution([pkg, "config", "controllers.yaml"])
-    smoother_yaml    = PathJoinSubstitution([pkg, "config", "velocity_smoother.yaml"])
+    smoother_yaml = PathJoinSubstitution([pkg, "config", "velocity_smoother.yaml"])
 
     # Launch arguments
     declared_args = [

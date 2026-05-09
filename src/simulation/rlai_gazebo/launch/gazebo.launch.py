@@ -63,7 +63,7 @@ def generate_launch_description():
         DeclareLaunchArgument("lidar_2d_enabled",     default_value="true"),
         DeclareLaunchArgument("lidar_3d_enabled",     default_value="false"),
         DeclareLaunchArgument("depth_camera_enabled", default_value="true"),
-        DeclareLaunchArgument("stereo_camera_enabled",default_value="false"),
+        DeclareLaunchArgument("stereo_camera_enabled", default_value="false"),
         DeclareLaunchArgument("imu_enabled",          default_value="true"),
         DeclareLaunchArgument("gps_enabled",          default_value="false"),
         DeclareLaunchArgument(
@@ -87,7 +87,7 @@ def generate_launch_description():
             " lidar_2d_enabled:=",     LaunchConfiguration("lidar_2d_enabled"),
             " lidar_3d_enabled:=",     LaunchConfiguration("lidar_3d_enabled"),
             " depth_camera_enabled:=", LaunchConfiguration("depth_camera_enabled"),
-            " stereo_camera_enabled:=",LaunchConfiguration("stereo_camera_enabled"),
+            " stereo_camera_enabled:=", LaunchConfiguration("stereo_camera_enabled"),
             " imu_enabled:=",          LaunchConfiguration("imu_enabled"),
             " gps_enabled:=",          LaunchConfiguration("gps_enabled"),
         ]),
