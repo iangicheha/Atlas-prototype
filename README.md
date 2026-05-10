@@ -108,19 +108,6 @@ Prerequisites: Docker with Compose support. For RViz on Linux, make sure X11 for
 
 ---
 
-## How It Compares
-
-`rbot` sits between focused examples and full robot product stacks. It gives ROS 2 Jazzy users a single AMR simulation workspace with Gazebo launch files, Nav2 configuration, mapping workflows, Docker entry points, and room for extension.
-
-| Project or resource | Typical focus | How `rbot` differs |
-| --- | --- | --- |
-| [BCR Bot](https://github.com/blackcoffeerobotics/bcr_bot) | Mobile robot simulation and Nav2 examples. | `rbot` targets a broader AMR reference workspace with Gazebo Harmonic, Docker workflows, mapping, localization, perception package placeholders, and planned Isaac scaffolding. |
-| [Linorobot2](https://github.com/linorobot/linorobot2) | ROS 2 bringup for real differential-drive robots and compatible bases. | `rbot` is simulation-first and uses a custom AMR model rather than focusing on hardware bringup for existing robot platforms. |
-| [ROSNav](https://github.com/ApolloAuto/rosnav) | Navigation research and learning-oriented navigation methods. | `rbot` keeps the focus on a runnable AMR workspace built around Nav2, SLAM Toolbox, ROS 2 control, Docker, and Gazebo Harmonic. |
-| [Nav2 tutorials](https://docs.nav2.org/tutorials/index.html) | Task-specific tutorials for Nav2 concepts and configuration. | `rbot` packages those kinds of concepts into a runnable AMR workspace with robot description, simulation, mapping, localization, and Docker entry points. |
-
----
-
 ## Repository Layout
 
 ```text
