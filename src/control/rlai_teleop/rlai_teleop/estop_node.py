@@ -1,7 +1,8 @@
 """
 rlai_teleop/estop_node.py
 
-Convenience software stop node for rbot simulation and development. Publishes zero-velocity TwistStamped messages while engaged.
+Convenience software stop node for rbot simulation and development.
+Publishes zero-velocity TwistStamped messages while engaged.
 
 Provides the /e_stop service (std_srvs/srv/Trigger).  Each call toggles the
 software stop state:
