@@ -42,7 +42,7 @@ services:
       - RLAI_GZ_HEADLESS=${RLAI_GZ_HEADLESS:-false}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
       # Bind-mount src so launch/config edits apply without rebuilding
       - ../src:/ros2_ws/src/rlai-bot/src:ro
     # ── GPU (Intel / AMD via DRI) ────────────────────────────────────────
@@ -71,6 +71,7 @@ services:
         localization_enabled:=true
         mapping_enabled:=false
         headless:=${RLAI_GZ_HEADLESS:-false}
+        ${RLAI_EXTRA_ARGS:-}
     stdin_open: true
     tty: true
     restart: "no"
@@ -93,7 +94,7 @@ services:
       - RLAI_GZ_HEADLESS=${RLAI_GZ_HEADLESS:-false}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
       - ../src:/ros2_ws/src/rlai-bot/src:ro
       - ../maps:/ros2_ws/maps:rw
     devices:
@@ -115,6 +116,7 @@ services:
         mapping_enabled:=true
         slam_rviz_enabled:=false
         headless:=${RLAI_GZ_HEADLESS:-false}
+        ${RLAI_EXTRA_ARGS:-}
     stdin_open: true
     tty: true
     restart: "no"
@@ -130,7 +132,7 @@ services:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
       - ../src:/ros2_ws/src/rlai-bot/src:ro
     devices:
       - /dev/dri:/dev/dri
@@ -189,7 +191,7 @@ services:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
       - ../src:/ros2_ws/src/rlai-bot/src:ro
     devices:
       - /dev/dri:/dev/dri
@@ -220,7 +222,7 @@ services:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
       - ../src:/ros2_ws/src/rlai-bot/src:ro
     devices:
       - /dev/dri:/dev/dri
@@ -268,7 +270,7 @@ services:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
     devices:
       - /dev/dri:/dev/dri
     group_add:

@@ -24,39 +24,40 @@
 </p>
 
 <p align="center">
-  <a href="https://youtu.be/B-d64c-2Mw0"></a>
+  <a href="https://youtu.be/B-d64c-2Mw0">Watch the demo video</a>
 </p>
 
 ---
 
 ## Overview
 
-`rbot` is a complete simulation-first Autonomous Mobile Robot (AMR) stack. It brings together robot description, Gazebo simulation, `ros2_control`, teleoperation, perception, localization, mapping, and Nav2 navigation in a modular ROS 2 workspace.
+`rbot` is a simulation-first Autonomous Mobile Robot (AMR) reference stack for ROS 2 Jazzy and Gazebo Harmonic. It combines robot description, Gazebo simulation, `ros2_control`, teleoperation, sensor simulation, localization, mapping, and Nav2 navigation in one ROS 2 workspace.
 
-The project is designed for two audiences:
+The project is for ROS users, students, and robotics teams that need a practical AMR baseline to run, inspect, and adapt. Its value is in the integration: a current ROS 2 workspace, Docker-first workflows, modern Nav2 configuration, and documentation that follows the full mapping-to-navigation path.
 
-- **ROS users** who want a practical AMR reference stack they can run, inspect, and extend.
-- **Learners** who want a clear path through the main building blocks of a modern mobile robot system.
-
-The primary simulator is **Gazebo Harmonic**. Isaac Sim integration is coming soon (open for PRs).
+Gazebo Harmonic is the supported simulator. Isaac Sim packages are present as scaffolding for planned future integration.
 
 ---
 
-## What You Can Do
+## What This Project Contributes
 
-- Launch a differential-drive AMR in Gazebo Harmonic.
-- Inspect and modify the robot URDF/Xacro model, meshes, sensors, and payload deck.
-- Run `ros2_control` with a differential-drive controller and joint state broadcaster.
-- Use joystick teleoperation with a software e-stop node.
-- Simulate 2-D LiDAR, IMU, depth camera, stereo camera, GPS, and optional 3-D LiDAR bridges.
-- Run EKF localization, AMCL, SLAM Toolbox mapping, and Nav2 navigation.
-- Use Docker for a reproducible development and simulation environment.
+`rbot` packages the AMR simulation path into one workspace: a Gazebo Harmonic robot model, ROS-Gazebo bridges, `ros2_control`, teleoperation, sensor topics, EKF localization, SLAM Toolbox mapping, AMCL, and Nav2. 
+
+| Area | Current support |
+| --- | --- |
+| Simulation | Gazebo Harmonic worlds, URDF/Xacro robot description, generated meshes, and configurable launch arguments. |
+| Control and teleoperation | `ros2_control`, differential-drive controller, joystick/keyboard teleop, and a convenience software stop service. |
+| Sensors and perception hooks | 2-D LiDAR, IMU, depth camera, stereo camera, GPS, and optional 3-D LiDAR bridge paths. |
+| Mapping and localization | SLAM Toolbox, AMCL, EKF, saved-map workflow, and example maps. |
+| Navigation | Nav2 launch files, MPPI controller, SMAC Hybrid-A* planner, behavior trees, and a simple action client. |
+| Developer workflow | Docker, Docker Compose, VS Code Dev Container, native Ubuntu 24.04 setup, CI, and tests. |
+| Isaac Sim | Package scaffolding for future integration. Gazebo is the supported simulator today. |
 
 ---
 
-## Three Magic Commands
+## Mapping and Navigation Quick Path
 
-Use these commands for mapping and then autonomous navigation loop.
+Use these commands for a mapping and autonomous navigation loop.
 
 Prerequisites: Docker with Compose support. For RViz on Linux, make sure X11 forwarding is available.
 
@@ -98,12 +99,25 @@ Prerequisites: Docker with Compose support. For RViz on Linux, make sure X11 for
 | Middleware | CycloneDDS |
 | Robot model | URDF/Xacro + generated mesh assets |
 | Control | `ros2_control`, `diff_drive_controller`, `joint_state_broadcaster` |
-| Teleoperation | `joy_linux`, `teleop_twist_joy`, software e-stop |
+| Teleoperation | `joy_linux`, `teleop_twist_joy`, convenience software stop |
 | Perception | 2-D LiDAR, optional 3-D point-cloud filtering, stereo/depth processing |
 | Localization | `robot_localization` EKF, AMCL |
 | Mapping | SLAM Toolbox online async and lifelong configs |
 | Navigation | Nav2 with MPPI controller and SMAC Hybrid-A* planner |
 | Containers | Docker, Docker Compose, VS Code Dev Container |
+
+---
+
+## How It Compares
+
+`rbot` sits between focused examples and full robot product stacks. It gives ROS 2 Jazzy users a single AMR simulation workspace with Gazebo launch files, Nav2 configuration, mapping workflows, Docker entry points, and room for extension.
+
+| Project or resource | Typical focus | How `rbot` differs |
+| --- | --- | --- |
+| [BCR Bot](https://github.com/blackcoffeerobotics/bcr_bot) | Mobile robot simulation and Nav2 examples. | `rbot` targets a broader AMR reference workspace with Gazebo Harmonic, Docker workflows, mapping, localization, perception package placeholders, and planned Isaac scaffolding. |
+| [Linorobot2](https://github.com/linorobot/linorobot2) | ROS 2 bringup for real differential-drive robots and compatible bases. | `rbot` is simulation-first and uses a custom AMR model rather than focusing on hardware bringup for existing robot platforms. |
+| [ROSNav](https://github.com/ApolloAuto/rosnav) | Navigation research and learning-oriented navigation methods. | `rbot` keeps the focus on a runnable AMR workspace built around Nav2, SLAM Toolbox, ROS 2 control, Docker, and Gazebo Harmonic. |
+| [Nav2 tutorials](https://docs.nav2.org/tutorials/index.html) | Task-specific tutorials for Nav2 concepts and configuration. | `rbot` packages those kinds of concepts into a runnable AMR workspace with robot description, simulation, mapping, localization, and Docker entry points. |
 
 ---
 
@@ -125,7 +139,7 @@ rbot/
     ├── navigation/       # Nav2 launch, params, behavior trees, client
     ├── perception/       # LiDAR and camera processing packages
     ├── robot/            # Robot description and mesh packages
-    ├── simulation/       # Gazebo and Isaac package scaffolding
+    ├── simulation/       # Gazebo packages and Isaac scaffolding
     └── utils/            # Shared utility package placeholder
 ```
 
@@ -153,9 +167,12 @@ bash scripts/run_sim.sh --rviz
 bash scripts/run_sim.sh --rviz-nav
 bash scripts/run_sim.sh --headless --rviz-nav --map /ros2_ws/maps/my_map.yaml
 bash scripts/run_sim.sh --headless --rviz-mapping
+bash scripts/run_sim.sh --headless world:=large_warehouse gps_enabled:=true
 ```
 
 The script starts services from `docker/docker-compose.yml` and launches the simulation stack inside the container. Use `--map` with `--rviz-nav` when AMCL/Nav2 should localize against a specific map YAML mounted under `/ros2_ws/maps/`.
+
+Extra arguments after the script flags are forwarded to the simulation launch service. Pass them as standard whitespace-free ROS launch tokens such as `name:=value`.
 
 ### 3. Alternative Docker helper
 
@@ -217,11 +234,13 @@ The joystick configuration lives in:
 src/control/rlai_teleop/config/joystick.yaml
 ```
 
-The software e-stop service is available at:
+The convenience software stop service is available at:
 
 ```bash
 ros2 service call /e_stop std_srvs/srv/Trigger {}
 ```
+
+This service publishes zero velocity commands while engaged.
 
 ### Run mapping with SLAM Toolbox
 
@@ -231,7 +250,7 @@ ros2 launch rlai_bringup simulation.launch.py \
   slam_rviz_enabled:=true
 ```
 
-Save the map from the mapping container when coverage looks good:
+Save the map from the mapping container when coverage looks good. When launched through the quick path, the mapping container is named `rlai_sim_mapping`:
 
 ```bash
 docker exec -it rlai_sim_mapping ros2 run nav2_map_server map_saver_cli -f /ros2_ws/maps/my_map
@@ -248,14 +267,6 @@ ros2 launch rlai_bringup simulation.launch.py \
 ```
 
 Example maps are stored in `maps/`.
-
-### Launch Docker navigation with a saved map
-
-```bash
-bash scripts/run_sim.sh --headless --rviz-nav --map /ros2_ws/maps/my_map.yaml
-```
-
-The host `maps/` directory is mounted read-only at `/ros2_ws/maps/` in the navigation container, so pass the container path to the YAML file.
 
 ### Launch Nav2 directly
 
@@ -290,9 +301,9 @@ ros2 run rlai_navigation nav_client --ros-args -p mode:=patrol
 | `rlai_description` | `ament_cmake` | Robot URDF/Xacro, sensor mounts, payload platform, RViz configs |
 | `rlai_meshes` | `ament_cmake` | Mesh assets used by the robot description |
 | `rlai_gazebo` | `ament_cmake` | Gazebo worlds, launch files, ROS-Gazebo bridge config |
-| `rlai_isaac` | `ament_python` | Placeholder package for future Isaac Sim integration |
+| `rlai_isaac` | `ament_python` | Scaffold package for planned Isaac Sim integration |
 | `rlai_control` | `ament_cmake` | `ros2_control` controller configuration and launch |
-| `rlai_teleop` | `ament_python` | Joystick teleoperation and software e-stop node |
+| `rlai_teleop` | `ament_python` | Joystick teleoperation and convenience software stop node |
 | `rlai_lidar_processing` | `ament_cmake` | Optional 3-D point-cloud height filtering and voxel downsampling |
 | `rlai_camera_processing` | `ament_cmake` | Stereo disparity and depth point-cloud processing launch/config |
 | `rlai_localization` | `ament_python` | IMU filtering, EKF, and AMCL launch/config |
@@ -327,7 +338,7 @@ Avoid enabling multiple nodes that publish the same transform.
 teleop / Nav2 -> /cmd_vel -> velocity_smoother -> /diff_drive_controller/cmd_vel
 ```
 
-The stack uses `TwistStamped` commands because the Jazzy `diff_drive_controller` expects stamped velocity input.
+The stack uses `TwistStamped` commands because the Jazzy `diff_drive_controller` expects stamped velocity input. The software stop node also publishes to `/cmd_vel`; it is a convenience mechanism for simulation and development.
 
 ### Simulation bridge
 
@@ -338,6 +349,22 @@ src/simulation/rlai_gazebo/config/ros_gz_bridge.yaml
 ```
 
 `/joint_states` is intentionally not bridged because `joint_state_broadcaster` owns that ROS topic.
+
+---
+
+## References and Prior Art
+
+`rbot` builds on established ROS 2 projects and examples:
+
+- [ROS 2 Jazzy documentation](https://docs.ros.org/en/jazzy/)
+- [Gazebo Harmonic documentation](https://gazebosim.org/docs/harmonic/)
+- [Nav2 documentation and tutorials](https://docs.nav2.org/)
+- [SLAM Toolbox](https://github.com/SteveMacenski/slam_toolbox)
+- [`robot_localization`](https://github.com/cra-ros-pkg/robot_localization)
+- [`ros2_control`](https://control.ros.org/jazzy/index.html)
+- [BCR Bot](https://github.com/blackcoffeerobotics/bcr_bot)
+- [Linorobot2](https://github.com/linorobot/linorobot2)
+- [ROSNav](https://github.com/ApolloAuto/rosnav)
 
 ---
 
@@ -427,14 +454,6 @@ The Gazebo image installs ROS, Gazebo, Nav2, SLAM, perception, and control depen
 ---
 
 ## Roadmap
-
-Current focus:
-
-- Gazebo Harmonic simulation stack
-- ROS 2 control and teleoperation
-- Sensor simulation and bridging
-- EKF, AMCL, SLAM Toolbox, and Nav2 integration
-- Open-source documentation and reproducible developer workflow
 
 Future extension points:
 

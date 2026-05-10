@@ -1,18 +1,16 @@
 """
 rlai_teleop/estop_node.py
 
-Emergency-stop node for rbot.
-
-This is a software stop only; it does not replace a hardware emergency-stop circuit.
+Convenience software stop node for rbot simulation and development. Publishes zero-velocity TwistStamped messages while engaged.
 
 Provides the /e_stop service (std_srvs/srv/Trigger).  Each call toggles the
-e-stop state:
-  - ENGAGED  → publishes zero-velocity TwistStamped to /cmd_vel at 10 Hz until released
-  - RELEASED → stops publishing; normal teleop/nav2 commands resume
+software stop state:
+  - ENGAGED  -> publishes zero-velocity TwistStamped to /cmd_vel at 10 Hz until released
+  - RELEASED -> stops publishing; normal teleop/nav2 commands may resume
 
-The zero-velocity stream overrides incoming commands because the EStop node's
-publisher shares /cmd_vel with teleop and nav2.  Downstream consumers (the
-velocity_smoother) will see the zero command and halt the robot.
+The zero-velocity stream shares /cmd_vel with teleop and Nav2. Downstream
+consumers such as velocity_smoother will receive those zero commands, but this
+behavior should be treated as a convenience for simulation.
 
 Usage:
   ros2 service call /e_stop std_srvs/srv/Trigger {}
@@ -33,11 +31,11 @@ class EStopNode(Node):
         self._pub = self.create_publisher(TwistStamped, 'cmd_vel', 1)
         self._srv = self.create_service(Trigger, 'e_stop', self._handle_estop)
 
-        # Re-publish zero velocity while e-stop is active.
+        # Re-publish zero velocity while software stop is active.
         self._timer = self.create_timer(0.1, self._timer_cb)  # 10 Hz
 
         self.get_logger().info(
-            'EStop node ready — call /e_stop (std_srvs/Trigger) to engage/release'
+            'Software stop node ready — call /e_stop (std_srvs/Trigger) to engage/release'
         )
 
     def _handle_estop(
@@ -50,12 +48,12 @@ class EStopNode(Node):
         if self._stopped:
             self._publish_zero()
             response.success = True
-            response.message = 'E-stop ENGAGED — robot halted'
-            self.get_logger().warn('E-stop ENGAGED')
+            response.message = 'Software stop engaged — publishing zero velocity commands'
+            self.get_logger().warn('Software stop engaged')
         else:
             response.success = True
-            response.message = 'E-stop RELEASED — teleoperation resumed'
-            self.get_logger().info('E-stop RELEASED')
+            response.message = 'Software stop released — normal command publishers may resume'
+            self.get_logger().info('Software stop released')
 
         return response
 

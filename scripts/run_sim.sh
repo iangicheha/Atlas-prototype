@@ -50,25 +50,41 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Build the list of docker compose services to start
-SERVICES="sim"
+SERVICES=(sim)
 if [[ "$RVIZ" == "true" ]]; then
-    SERVICES="sim rviz"
+    SERVICES=(sim rviz)
 fi
 if [[ "$RVIZ_NAV" == "true" ]]; then
-    SERVICES="sim nav rviz_nav"
+    SERVICES=(sim nav rviz_nav)
 fi
 if [[ "$RVIZ_MAPPING" == "true" ]]; then
-    SERVICES="sim_mapping rviz_mapping"
+    SERVICES=(sim_mapping rviz_mapping)
 fi
 
-# Allow X11 connections from Docker when Gazebo or RViz needs a display.
+GUI_REQUIRED=false
 if [[ "$HEADLESS" == "false" ]] || [[ "$RVIZ" == "true" ]] || [[ "$RVIZ_NAV" == "true" ]] || [[ "$RVIZ_MAPPING" == "true" ]]; then
+    GUI_REQUIRED=true
+fi
+
+if [[ "$GUI_REQUIRED" == "true" ]]; then
+    export XAUTHORITY="${XAUTHORITY:-/tmp/.docker.xauth}"
+    if [[ -d "$XAUTHORITY" ]]; then
+        rm -rf "$XAUTHORITY"
+    fi
+    touch "$XAUTHORITY"
+    if command -v xauth >/dev/null 2>&1; then
+        xauth nlist "$DISPLAY" 2>/dev/null | sed -e 's/^..../ffff/' | xauth -f "$XAUTHORITY" nmerge - 2>/dev/null || true
+    fi
+    chmod 600 "$XAUTHORITY"
     xhost +local:docker 2>/dev/null || true
 fi
 
-# Export launch flags — docker-compose.yml reads these from the host env
+# Export launch flags — docker-compose.yml reads these from the host env.
+# Extra launch args are standard name:=value tokens and should not contain whitespace.
 export RLAI_GZ_HEADLESS="$HEADLESS"
 export RLAI_MAP_YAML="$MAP_YAML"
+RLAI_EXTRA_ARGS="${ROSARGS[*]}"
+export RLAI_EXTRA_ARGS
 
 echo "==> Launching rbot simulation (Gazebo Harmonic)"
 echo "    RViz:         $RVIZ"
@@ -76,6 +92,5 @@ echo "    RViz nav:     $RVIZ_NAV"
 echo "    RViz mapping: $RVIZ_MAPPING"
 echo "    Headless:     $HEADLESS"
 echo "    Map YAML:     $MAP_YAML"
-echo "    Extra args:   ${ROSARGS[*]:-none}"
-# ROSARGS are currently parsed for logging only; compose services use fixed launch arguments.
-exec docker compose -f "$WS_ROOT/docker/docker-compose.yml" up $SERVICES
+echo "    Extra args:   ${RLAI_EXTRA_ARGS:-none}"
+exec docker compose -f "$WS_ROOT/docker/docker-compose.yml" up "${SERVICES[@]}"
