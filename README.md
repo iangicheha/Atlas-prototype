@@ -18,13 +18,13 @@
 ---
 
 <p align="center">
-  <a href="https://youtu.be/X7j9CCdoDgA">
-    <img src="https://img.youtube.com/vi/X7j9CCdoDgA/maxresdefault.jpg" alt="Watch the rbot open-source ROS 2 AMR simulation demo" width="720">
+  <a href="https://youtu.be/B-d64c-2Mw0">
+    <img src="https://img.youtube.com/vi/B-d64c-2Mw0/maxresdefault.jpg" alt="Watch the rbot open-source ROS 2 AMR simulation demo" width="720">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://youtu.be/X7j9CCdoDgA"></a>
+  <a href="https://youtu.be/B-d64c-2Mw0"></a>
 </p>
 
 ---
