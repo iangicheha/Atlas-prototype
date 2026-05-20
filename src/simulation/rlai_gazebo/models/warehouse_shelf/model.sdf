@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<sdf version="1.11">
+  <model name="warehouse_shelf">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry><box><size>3.0 0.8 2.0</size></box></geometry>
+        <pose>0 0 1.0 0 0 0</pose>
+      </collision>
+      <visual name="upright_left"><pose>-1.4 -0.35 1.0 0 0 0</pose><geometry><box><size>0.08 0.08 2.0</size></box></geometry><material><ambient>0.18 0.20 0.22 1</ambient><diffuse>0.18 0.20 0.22 1</diffuse></material></visual>
+      <visual name="upright_right"><pose>1.4 -0.35 1.0 0 0 0</pose><geometry><box><size>0.08 0.08 2.0</size></box></geometry><material><ambient>0.18 0.20 0.22 1</ambient><diffuse>0.18 0.20 0.22 1</diffuse></material></visual>
+      <visual name="upright_back_left"><pose>-1.4 0.35 1.0 0 0 0</pose><geometry><box><size>0.08 0.08 2.0</size></box></geometry><material><ambient>0.18 0.20 0.22 1</ambient><diffuse>0.18 0.20 0.22 1</diffuse></material></visual>
+      <visual name="upright_back_right"><pose>1.4 0.35 1.0 0 0 0</pose><geometry><box><size>0.08 0.08 2.0</size></box></geometry><material><ambient>0.18 0.20 0.22 1</ambient><diffuse>0.18 0.20 0.22 1</diffuse></material></visual>
+      <visual name="shelf_bottom"><pose>0 0 0.35 0 0 0</pose><geometry><box><size>3.0 0.8 0.08</size></box></geometry><material><ambient>0.55 0.55 0.58 1</ambient><diffuse>0.55 0.55 0.58 1</diffuse></material></visual>
+      <visual name="shelf_middle"><pose>0 0 1.05 0 0 0</pose><geometry><box><size>3.0 0.8 0.08</size></box></geometry><material><ambient>0.55 0.55 0.58 1</ambient><diffuse>0.55 0.55 0.58 1</diffuse></material></visual>
+      <visual name="shelf_top"><pose>0 0 1.75 0 0 0</pose><geometry><box><size>3.0 0.8 0.08</size></box></geometry><material><ambient>0.55 0.55 0.58 1</ambient><diffuse>0.55 0.55 0.58 1</diffuse></material></visual>
+    </link>
+  </model>
+</sdf>

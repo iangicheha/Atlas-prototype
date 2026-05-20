@@ -45,7 +45,7 @@ Gazebo Harmonic is the supported simulator. Isaac Sim packages are present as sc
 
 | Area | Current support |
 | --- | --- |
-| Simulation | Gazebo Harmonic worlds, URDF/Xacro robot description, generated meshes, and configurable launch arguments. |
+| Simulation | Gazebo Harmonic demo and benchmark worlds, URDF/Xacro robot description, generated meshes, and configurable launch arguments. |
 | Control and teleoperation | `ros2_control`, differential-drive controller, joystick/keyboard teleop, and a convenience software stop service. |
 | Sensors and perception hooks | 2-D LiDAR, IMU, depth camera, stereo camera, GPS, and optional 3-D LiDAR bridge paths. |
 | Mapping and localization | SLAM Toolbox, AMCL, EKF, saved-map workflow, and example maps. |
@@ -160,6 +160,17 @@ bash scripts/run_sim.sh --headless world:=large_warehouse gps_enabled:=true
 The script starts services from `docker/docker-compose.yml` and launches the simulation stack inside the container. Use `--map` with `--rviz-nav` when AMCL/Nav2 should localize against a specific map YAML mounted under `/ros2_ws/maps/`.
 
 Extra arguments after the script flags are forwarded to the simulation launch service. Pass them as standard whitespace-free ROS launch tokens such as `name:=value`.
+
+Bundled Gazebo worlds include the default warehouse plus richer demo and benchmark scenarios:
+
+```bash
+bash scripts/run_sim.sh world:=demo_warehouse_visual
+bash scripts/run_sim.sh world:=benchmark_warehouse_easy
+bash scripts/run_sim.sh world:=benchmark_warehouse_medium
+bash scripts/run_sim.sh world:=benchmark_warehouse_hard
+```
+
+Use the same `world:=...` argument with `--rviz-mapping` to build maps in each scenario.
 
 ### 3. Alternative Docker helper
 

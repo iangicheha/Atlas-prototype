@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<sdf version="1.11">
+  <world name="benchmark_warehouse_hard">
+    <physics name="1ms" type="ignored"><max_step_size>0.001</max_step_size><real_time_factor>1.0</real_time_factor></physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors"><render_engine>ogre2</render_engine></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <model name="ground_plane"><static>true</static><link name="link"><collision name="collision"><geometry><plane><normal>0 0 1</normal><size>80 80</size></plane></geometry></collision><visual name="visual"><geometry><plane><normal>0 0 1</normal><size>80 80</size></plane></geometry><material><ambient>0.53 0.53 0.55 1</ambient><diffuse>0.53 0.53 0.55 1</diffuse></material></visual></link></model>
+    <light name="sun" type="directional"><cast_shadows>true</cast_shadows><pose>0 0 12 0 0 0</pose><diffuse>0.82 0.82 0.82 1</diffuse><direction>-0.4 0.2 -0.9</direction></light>
+
+    <model name="wall_north"><static>true</static><pose>0 16 1.5 0 0 0</pose><link name="link"><collision name="collision"><geometry><box><size>32.4 0.2 3.0</size></box></geometry></collision><visual name="visual"><geometry><box><size>32.4 0.2 3.0</size></box></geometry><material><ambient>0.80 0.80 0.82 1</ambient><diffuse>0.80 0.80 0.82 1</diffuse></material></visual></link></model>
+    <model name="wall_south"><static>true</static><pose>0 -16 1.5 0 0 0</pose><link name="link"><collision name="collision"><geometry><box><size>32.4 0.2 3.0</size></box></geometry></collision><visual name="visual"><geometry><box><size>32.4 0.2 3.0</size></box></geometry><material><ambient>0.80 0.80 0.82 1</ambient><diffuse>0.80 0.80 0.82 1</diffuse></material></visual></link></model>
+    <model name="wall_east"><static>true</static><pose>16 0 1.5 0 0 0</pose><link name="link"><collision name="collision"><geometry><box><size>0.2 32.0 3.0</size></box></geometry></collision><visual name="visual"><geometry><box><size>0.2 32.0 3.0</size></box></geometry><material><ambient>0.80 0.80 0.82 1</ambient><diffuse>0.80 0.80 0.82 1</diffuse></material></visual></link></model>
+    <model name="wall_west"><static>true</static><pose>-16 0 1.5 0 0 0</pose><link name="link"><collision name="collision"><geometry><box><size>0.2 32.0 3.0</size></box></geometry></collision><visual name="visual"><geometry><box><size>0.2 32.0 3.0</size></box></geometry><material><ambient>0.80 0.80 0.82 1</ambient><diffuse>0.80 0.80 0.82 1</diffuse></material></visual></link></model>
+
+    <include><name>shelf_hard_01</name><uri>model://warehouse_shelf</uri><pose>-10 9 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_02</name><uri>model://warehouse_shelf</uri><pose>-10 3 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_03</name><uri>model://warehouse_shelf</uri><pose>-10 -3 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_04</name><uri>model://warehouse_shelf</uri><pose>-10 -9 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_05</name><uri>model://warehouse_shelf</uri><pose>-3 9 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_06</name><uri>model://warehouse_shelf</uri><pose>-3 3 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_07</name><uri>model://warehouse_shelf</uri><pose>-3 -3 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_08</name><uri>model://warehouse_shelf</uri><pose>-3 -9 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_09</name><uri>model://warehouse_shelf</uri><pose>4 9 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_10</name><uri>model://warehouse_shelf</uri><pose>4 3 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_11</name><uri>model://warehouse_shelf</uri><pose>4 -3 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_12</name><uri>model://warehouse_shelf</uri><pose>4 -9 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_13</name><uri>model://warehouse_shelf</uri><pose>11 9 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_14</name><uri>model://warehouse_shelf</uri><pose>11 3 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_15</name><uri>model://warehouse_shelf</uri><pose>11 -3 0 0 0 1.5708</pose></include>
+    <include><name>shelf_hard_16</name><uri>model://warehouse_shelf</uri><pose>11 -9 0 0 0 1.5708</pose></include>
+    <include><name>pallet_hard_01</name><uri>model://warehouse_pallet</uri><pose>-6 -12 0 0 0 0.4</pose></include>
+    <include><name>pallet_hard_02</name><uri>model://warehouse_pallet</uri><pose>0 12 0 0 0 -0.3</pose></include>
+    <include><name>pallet_hard_03</name><uri>model://warehouse_pallet</uri><pose>7 -12 0 0 0 0.2</pose></include>
+    <include><name>box_cluster_hard_01</name><uri>model://warehouse_box_cluster</uri><pose>-7 0 0 0 0 0.2</pose></include>
+    <include><name>box_cluster_hard_02</name><uri>model://warehouse_box_cluster</uri><pose>1 -6 0 0 0 -0.2</pose></include>
+    <include><name>box_cluster_hard_03</name><uri>model://warehouse_box_cluster</uri><pose>8 6 0 0 0 0.5</pose></include>
+    <include><name>trash_bin_hard_01</name><uri>model://warehouse_trash_bin</uri><pose>-13 -2 0 0 0 0</pose></include>
+    <include><name>trash_bin_hard_02</name><uri>model://warehouse_trash_bin</uri><pose>13 2 0 0 0 0</pose></include>
+    <include><name>pallet_jack_hard_01</name><uri>model://warehouse_pallet_jack</uri><pose>13 -12 0 0 0 1.2</pose></include>
+    <include><name>charging_dock_hard_01</name><uri>model://charging_dock</uri><pose>-13 13 0 0 0 -0.8</pose></include>
+    <include><name>floor_marking_hard_01</name><uri>model://warehouse_floor_marking</uri><pose>-12 0 0 0 0 1.5708</pose></include>
+    <include><name>floor_marking_hard_02</name><uri>model://warehouse_floor_marking</uri><pose>14 0 0 0 0 1.5708</pose></include>
+  </world>
+</sdf>

@@ -66,6 +66,11 @@ def generate_launch_description():
             default_value="false",
             description="Run Gazebo server-only (no GUI). Physics and sensors remain active.",
         ),
+        DeclareLaunchArgument(
+            "extra_gz_resource_path",
+            default_value="",
+            description="Additional Gazebo resource path entries for external worlds and models.",
+        ),
         DeclareLaunchArgument("robot_namespace",      default_value=""),
         DeclareLaunchArgument("lidar_2d_enabled",     default_value="true"),
         DeclareLaunchArgument("lidar_3d_enabled",     default_value="false"),
@@ -130,6 +135,7 @@ def generate_launch_description():
         "imu_enabled":           LaunchConfiguration("imu_enabled"),
         "gps_enabled":           LaunchConfiguration("gps_enabled"),
         "headless":              LaunchConfiguration("headless"),
+        "extra_gz_resource_path": LaunchConfiguration("extra_gz_resource_path"),
     }
 
     gazebo_bringup = IncludeLaunchDescription(

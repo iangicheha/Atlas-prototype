@@ -49,3 +49,4 @@ tests/test_branding.py
 tests/test_run_sim.py
 tests/test_rviz_configs.py
 tests/fixtures/*
+docs/superpowers/*

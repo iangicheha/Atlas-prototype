@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<sdf version="1.11">
+  <model name="warehouse_trash_bin">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision"><pose>0 0 0.45 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>0.9</length></cylinder></geometry></collision>
+      <visual name="body"><pose>0 0 0.45 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>0.9</length></cylinder></geometry><material><ambient>0.10 0.18 0.14 1</ambient><diffuse>0.10 0.18 0.14 1</diffuse></material></visual>
+      <visual name="lid"><pose>0 0 0.93 0 0 0</pose><geometry><cylinder><radius>0.32</radius><length>0.06</length></cylinder></geometry><material><ambient>0.06 0.10 0.08 1</ambient><diffuse>0.06 0.10 0.08 1</diffuse></material></visual>
+    </link>
+  </model>
+</sdf>

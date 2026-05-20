@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<sdf version="1.11">
+  <world name="demo_warehouse_visual">
+    <physics name="1ms" type="ignored"><max_step_size>0.001</max_step_size><real_time_factor>1.0</real_time_factor></physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors"><render_engine>ogre2</render_engine></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"/>
+
+    <spherical_coordinates><surface_model>EARTH_WGS84</surface_model><world_frame_orientation>ENU</world_frame_orientation><latitude_deg>30.3072</latitude_deg><longitude_deg>-97.7560</longitude_deg><elevation>160.0</elevation><heading_deg>0</heading_deg></spherical_coordinates>
+
+    <light name="sun" type="directional"><cast_shadows>true</cast_shadows><pose>0 0 12 0 0 0</pose><diffuse>0.8 0.8 0.8 1</diffuse><specular>0.2 0.2 0.2 1</specular><direction>-0.4 0.2 -0.9</direction></light>
+    <light name="warehouse_fill" type="directional"><cast_shadows>false</cast_shadows><pose>0 0 12 0 0 0</pose><diffuse>0.45 0.45 0.45 1</diffuse><direction>0.4 -0.2 -0.9</direction></light>
+
+    <model name="ground_plane"><static>true</static><link name="link"><collision name="collision"><geometry><plane><normal>0 0 1</normal><size>80 80</size></plane></geometry></collision><visual name="visual"><geometry><plane><normal>0 0 1</normal><size>80 80</size></plane></geometry><material><ambient>0.56 0.56 0.58 1</ambient><diffuse>0.56 0.56 0.58 1</diffuse></material></visual></link></model>
+
+    <model name="wall_north"><static>true</static><pose>0 15 1.5 0 0 0</pose><link name="link"><collision name="collision"><geometry><box><size>30.4 0.2 3.0</size></box></geometry></collision><visual name="visual"><geometry><box><size>30.4 0.2 3.0</size></box></geometry><material><ambient>0.80 0.80 0.82 1</ambient><diffuse>0.80 0.80 0.82 1</diffuse></material></visual></link></model>
+    <model name="wall_south"><static>true</static><pose>0 -15 1.5 0 0 0</pose><link name="link"><collision name="collision"><geometry><box><size>30.4 0.2 3.0</size></box></geometry></collision><visual name="visual"><geometry><box><size>30.4 0.2 3.0</size></box></geometry><material><ambient>0.80 0.80 0.82 1</ambient><diffuse>0.80 0.80 0.82 1</diffuse></material></visual></link></model>
+    <model name="wall_east"><static>true</static><pose>15 0 1.5 0 0 0</pose><link name="link"><collision name="collision"><geometry><box><size>0.2 30.0 3.0</size></box></geometry></collision><visual name="visual"><geometry><box><size>0.2 30.0 3.0</size></box></geometry><material><ambient>0.80 0.80 0.82 1</ambient><diffuse>0.80 0.80 0.82 1</diffuse></material></visual></link></model>
+    <model name="wall_west"><static>true</static><pose>-15 0 1.5 0 0 0</pose><link name="link"><collision name="collision"><geometry><box><size>0.2 30.0 3.0</size></box></geometry></collision><visual name="visual"><geometry><box><size>0.2 30.0 3.0</size></box></geometry><material><ambient>0.80 0.80 0.82 1</ambient><diffuse>0.80 0.80 0.82 1</diffuse></material></visual></link></model>
+
+    <include><name>charging_dock_demo_01</name><uri>model://charging_dock</uri><pose>-12 -12 0 0 0 0</pose></include>
+    <include><name>pallet_jack_demo_01</name><uri>model://warehouse_pallet_jack</uri><pose>10 -10 0 0 0 1.5708</pose></include>
+
+    <include><name>shelf_demo_01</name><uri>model://warehouse_shelf</uri><pose>-8 5 0 0 0 0</pose></include>
+    <include><name>shelf_demo_02</name><uri>model://warehouse_shelf</uri><pose>-8 8 0 0 0 0</pose></include>
+    <include><name>shelf_demo_03</name><uri>model://warehouse_shelf</uri><pose>-2 5 0 0 0 0</pose></include>
+    <include><name>shelf_demo_04</name><uri>model://warehouse_shelf</uri><pose>-2 8 0 0 0 0</pose></include>
+    <include><name>shelf_demo_05</name><uri>model://warehouse_shelf</uri><pose>4 5 0 0 0 0</pose></include>
+    <include><name>shelf_demo_06</name><uri>model://warehouse_shelf</uri><pose>4 8 0 0 0 0</pose></include>
+    <include><name>shelf_demo_07</name><uri>model://warehouse_shelf</uri><pose>10 5 0 0 0 0</pose></include>
+    <include><name>shelf_demo_08</name><uri>model://warehouse_shelf</uri><pose>10 8 0 0 0 0</pose></include>
+
+    <include><name>pallet_demo_01</name><uri>model://warehouse_pallet</uri><pose>-6 -6 0 0 0 0.4</pose></include>
+    <include><name>pallet_demo_02</name><uri>model://warehouse_pallet</uri><pose>-4 -7 0 0 0 -0.2</pose></include>
+    <include><name>pallet_demo_03</name><uri>model://warehouse_pallet</uri><pose>6 -5 0 0 0 0.1</pose></include>
+    <include><name>box_cluster_demo_01</name><uri>model://warehouse_box_cluster</uri><pose>8 -3 0 0 0 0.5</pose></include>
+    <include><name>box_cluster_demo_02</name><uri>model://warehouse_box_cluster</uri><pose>-10 1 0 0 0 -0.3</pose></include>
+    <include><name>trash_bin_demo_01</name><uri>model://warehouse_trash_bin</uri><pose>12 2 0 0 0 0</pose></include>
+
+    <include><name>floor_marking_demo_01</name><uri>model://warehouse_floor_marking</uri><pose>0 -2 0 0 0 0</pose></include>
+    <include><name>floor_marking_demo_02</name><uri>model://warehouse_floor_marking</uri><pose>4 -2 0 0 0 0</pose></include>
+    <include><name>floor_marking_demo_03</name><uri>model://warehouse_floor_marking</uri><pose>8 -2 0 0 0 0</pose></include>
+    <include><name>floor_marking_demo_04</name><uri>model://warehouse_floor_marking</uri><pose>-4 -2 0 0 0 0</pose></include>
+    <include><name>floor_marking_demo_05</name><uri>model://warehouse_floor_marking</uri><pose>-8 -2 0 0 0 0</pose></include>
+  </world>
+</sdf>

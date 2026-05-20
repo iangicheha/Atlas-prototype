@@ -1,27 +1,35 @@
-# rlai_gazebo/models/
+# rlai_gazebo/models
 
-Custom Gazebo Fuel model assets for the rbot simulation.
+Reusable Gazebo Harmonic model assets for rbot simulation worlds.
 
-## Adding Custom Models
+Each model directory is Fuel-compatible and contains:
 
-Place Fuel-compatible model directories here. Each directory must contain:
-- `model.config` — metadata (name, version, author, description)
-- `model.sdf` — SDF geometry and plugins
+- `model.config` — model metadata
+- `model.sdf` — model geometry, visuals, and collision
+- `meshes/` — optional local mesh files
+- `materials/` — optional local material scripts/textures
 
-`gazebo.launch.py` sets `GZ_SIM_RESOURCE_PATH` to include this
-directory automatically, so models placed here are available to all worlds by name.
+Bundled models are intentionally low-poly and use simple collision geometry so Nav2, SLAM, and sensor demos stay responsive.
 
-## Downloading from Gazebo Fuel
+## Bundled warehouse assets
 
-```bash
-gz fuel download -u 'https://fuel.gazebosim.org/1.0/<org>/models/<name>'
-# Example:
-gz fuel download -u 'https://fuel.gazebosim.org/1.0/OpenRobotics/models/Shelf'
+- `warehouse_shelf` — reusable shelf block for warehouse aisles
+- `warehouse_pallet` — low-profile pallet obstacle
+- `warehouse_pallet_jack` — static pallet jack visual obstacle
+- `warehouse_box_cluster` — clutter group for local-planner stress tests
+- `warehouse_trash_bin` — cylindrical obstacle for warehouse/office layouts
+- `warehouse_floor_marking` — visual-only yellow aisle strip
+- `charging_dock` — visual docking/charging target
+
+## Adding models
+
+Use stable lowercase names with underscores. Add the directory under this folder and reference it from worlds with:
+
+```xml
+<include>
+  <uri>model://warehouse_shelf</uri>
+  <pose>0 0 0 0 0 0</pose>
+</include>
 ```
 
-## Status
-
-Phase 3 worlds (`empty.sdf`, `small_warehouse.sdf`) use primitive SDF geometry
-(boxes/cylinders) only — no external mesh assets required.
-
-Higher-fidelity mesh assets (shelves, pallets, forklifts) are candidates for later phases.
+Keep collision shapes simpler than visuals. Avoid high-poly mesh collisions unless a model genuinely requires them.

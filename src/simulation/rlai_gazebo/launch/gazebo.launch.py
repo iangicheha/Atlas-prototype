@@ -14,11 +14,16 @@ Usage:
   ros2 launch rlai_gazebo gazebo.launch.py world:=empty x:=1.0 y:=2.0
 """
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
     ExecuteProcess,
     IncludeLaunchDescription,
+    OpaqueFunction,
+    SetEnvironmentVariable,
     TimerAction,
 )
 from launch.conditions import IfCondition, UnlessCondition
@@ -32,6 +37,85 @@ from launch.substitutions import (
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
+
+
+def _path_entries(path_value):
+    return [entry for entry in path_value.split(os.pathsep) if entry]
+
+
+def _unique_paths(paths):
+    unique = []
+    seen = set()
+    for path in paths:
+        if path and path not in seen:
+            unique.append(path)
+            seen.add(path)
+    return unique
+
+
+def _find_world_in_paths(world, paths):
+    for path in paths:
+        for candidate in (
+            os.path.join(path, f"{world}.sdf"),
+            os.path.join(path, "worlds", f"{world}.sdf"),
+        ):
+            if os.path.exists(candidate):
+                return candidate
+    return None
+
+
+def _resolve_world_path(context):
+    world = LaunchConfiguration("world").perform(context)
+    if os.path.isabs(world):
+        return world
+
+    if os.sep in world or (os.altsep and os.altsep in world) or world.endswith(".sdf"):
+        return world
+
+    extra_paths = _path_entries(
+        LaunchConfiguration("extra_gz_resource_path").perform(context)
+    )
+    existing_paths = _path_entries(os.environ.get("GZ_SIM_RESOURCE_PATH", ""))
+
+    found_world = _find_world_in_paths(world, extra_paths)
+    if found_world:
+        return found_world
+
+    found_world = _find_world_in_paths(world, existing_paths)
+    if found_world:
+        return found_world
+
+    return os.path.join(
+        get_package_share_directory("rlai_gazebo"),
+        "worlds",
+        f"{world}.sdf",
+    )
+
+
+def _launch_gz_sim(context, *, headless):
+    cmd = ["gz", "sim", "-r"]
+    if headless:
+        cmd.append("-s")
+    cmd.append(_resolve_world_path(context))
+
+    return [ExecuteProcess(cmd=cmd, output="screen")]
+
+
+def _gazebo_resource_path(context):
+    gazebo_share = get_package_share_directory("rlai_gazebo")
+    bundled_paths = [
+        os.path.join(gazebo_share, "models"),
+        gazebo_share,
+        get_package_share_directory("rlai_meshes"),
+    ]
+    existing_paths = _path_entries(os.environ.get("GZ_SIM_RESOURCE_PATH", ""))
+    extra_paths = _path_entries(
+        LaunchConfiguration("extra_gz_resource_path").perform(context)
+    )
+
+    return os.pathsep.join(
+        _unique_paths(bundled_paths + existing_paths + extra_paths)
+    )
 
 
 def generate_launch_description():
@@ -76,6 +160,11 @@ def generate_launch_description():
             default_value="false",
             description="Run Gazebo server-only (no GUI). Physics and sensors remain active.",
         ),
+        DeclareLaunchArgument(
+            "extra_gz_resource_path",
+            default_value="",
+            description="Additional Gazebo resource path entries for external worlds and models.",
+        ),
     ]
 
     robot_description = ParameterValue(
@@ -94,22 +183,21 @@ def generate_launch_description():
         value_type=str,
     )
 
-    gz_sim_gui = ExecuteProcess(
-        cmd=[
-            "gz", "sim", "-r",
-            PathJoinSubstitution([pkg_gz, "worlds",
-                                  [LaunchConfiguration("world"), ".sdf"]]),
+    gz_resource_path = OpaqueFunction(
+        function=lambda context: [
+            SetEnvironmentVariable(
+                name="GZ_SIM_RESOURCE_PATH",
+                value=_gazebo_resource_path(context),
+            )
         ],
-        output="screen",
+    )
+
+    gz_sim_gui = OpaqueFunction(
+        function=lambda context: _launch_gz_sim(context, headless=False),
         condition=UnlessCondition(LaunchConfiguration("headless")),
     )
-    gz_sim_headless = ExecuteProcess(
-        cmd=[
-            "gz", "sim", "-r", "-s",
-            PathJoinSubstitution([pkg_gz, "worlds",
-                                  [LaunchConfiguration("world"), ".sdf"]]),
-        ],
-        output="screen",
+    gz_sim_headless = OpaqueFunction(
+        function=lambda context: _launch_gz_sim(context, headless=True),
         condition=IfCondition(LaunchConfiguration("headless")),
     )
 
@@ -187,6 +275,7 @@ def generate_launch_description():
 
     return LaunchDescription(
         declared_args + [
+            gz_resource_path,
             gz_sim_gui,
             gz_sim_headless,
             robot_state_publisher,
