@@ -1,11 +1,18 @@
+# PROJECT ATLAS
+
 <p align="center">
-  <img src="docs/assets/rbot-logo.png" alt="rbot autonomous mobile robot logo" width="360">
+  <img src="docs/assets/rbot-logo.png" alt="Project Atlas Autonomous Mobile Robot" width="360">
 </p>
 
-<h1 align="center">rbot</h1>
+<h1 align="center">Project Atlas</h1>
 
 <p align="center">
-  An open-source Autonomous Mobile Robot simulation stack for ROS 2 Jazzy and Gazebo Harmonic.
+  <strong>Autonomous Mobile Robots for Warehouse Logistics</strong>
+</p>
+
+<p align="center">
+  A ROS 2-based autonomous robotics platform for perception, localization,
+  mapping, navigation, obstacle avoidance, and intelligent warehouse mobility.
 </p>
 
 <p align="center">
@@ -13,470 +20,730 @@
   <img alt="ROS 2 Jazzy" src="https://img.shields.io/badge/ROS%202-Jazzy-22314E.svg">
   <img alt="Gazebo Harmonic" src="https://img.shields.io/badge/Gazebo-Harmonic-F58113.svg">
   <img alt="Ubuntu 24.04" src="https://img.shields.io/badge/Ubuntu-24.04-E95420.svg">
-</p>
-
----
-
-<p align="center">
-  <a href="https://youtu.be/B-d64c-2Mw0">
-    <img src="https://img.youtube.com/vi/B-d64c-2Mw0/maxresdefault.jpg" alt="Watch the rbot open-source ROS 2 AMR simulation demo" width="720">
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://youtu.be/B-d64c-2Mw0">Watch the demo video</a>
+  <img alt="Project Atlas" src="https://img.shields.io/badge/Project-Atlas-black.svg">
 </p>
 
 ---
 
 ## Overview
 
-`rbot` is a simulation-first Autonomous Mobile Robot (AMR) reference stack for ROS 2 Jazzy and Gazebo Harmonic. It combines robot description, Gazebo simulation, `ros2_control`, teleoperation, sensor simulation, localization, mapping, and Nav2 navigation in one ROS 2 workspace.
+**Project Atlas** is an autonomous mobile robot platform being developed by **Faraday's Lab** for warehouse logistics.
 
-The project is for ROS users, students, and robotics teams that need a practical AMR baseline to run, inspect, and adapt. Its value is in the integration: a current ROS 2 workspace, Docker-first workflows, modern Nav2 configuration, and documentation that follows the full mapping-to-navigation path.
+The system is designed around a simple objective:
 
-Gazebo Harmonic is the supported simulator. Isaac Sim packages are present as scaffolding for planned future integration.
+> **Enable mobile robots to perceive warehouse environments, understand where they are, plan safe paths, and autonomously move material between locations.**
 
----
+Atlas combines simulation, robot control, perception, localization, mapping, and autonomous navigation into a unified ROS 2 architecture.
 
-## What This Project Contributes
+The platform is being developed as a foundation for real-world warehouse automation rather than as a standalone simulation exercise.
 
-`rbot` packages the AMR simulation path into one workspace: a Gazebo Harmonic robot model, ROS-Gazebo bridges, `ros2_control`, teleoperation, sensor topics, EKF localization, SLAM Toolbox mapping, AMCL, and Nav2. 
-
-| Area | Current support |
-| --- | --- |
-| Simulation | Gazebo Harmonic demo and benchmark worlds, URDF/Xacro robot description, generated meshes, and configurable launch arguments. |
-| Control and teleoperation | `ros2_control`, differential-drive controller, joystick/keyboard teleop, and a convenience software stop service. |
-| Sensors and perception hooks | 2-D LiDAR, IMU, depth camera, stereo camera, GPS, and optional 3-D LiDAR bridge paths. |
-| Mapping and localization | SLAM Toolbox, AMCL, EKF, saved-map workflow, and example maps. |
-| Navigation | Nav2 launch files, MPPI controller, SMAC Hybrid-A* planner, behavior trees, and a simple action client. |
-| Developer workflow | Docker, Docker Compose, VS Code Dev Container, native Ubuntu 24.04 setup, CI, and tests. |
-| Isaac Sim | Package scaffolding for future integration. Gazebo is the supported simulator today. |
+The current development environment uses **ROS 2 Jazzy**, **Gazebo Harmonic**, **Nav2**, **SLAM Toolbox**, `ros2_control`, sensor simulation, and autonomous navigation components.
 
 ---
 
-## Mapping and Navigation Quick Path
+# The Atlas Platform
 
-Use these commands for a mapping and autonomous navigation loop.
+Project Atlas is designed around two autonomous mobile robot platforms serving different warehouse requirements.
 
-Prerequisites: Docker with Compose support. For RViz on Linux, make sure X11 forwarding is available.
+| Platform     | Target Payload | Primary Role                                                             |
+| ------------ | -------------: | ------------------------------------------------------------------------ |
+| **TITAN**    |         ~60 kg | Small-load transport, picking support, intra-warehouse material movement |
+| **COLOSSUS** |      ~1,000 kg | Pallet and heavy-load transportation                                     |
 
-1. Start mapping with RViz:
+Both platforms are intended to share a common autonomy architecture while allowing their mechanical platforms, payload systems, and operational parameters to differ.
 
-   ```bash
-   bash scripts/run_sim.sh --headless --rviz-mapping
-   ```
+### Common autonomy capabilities
 
-   - Drive the robot through the map with teleop (next command).
-   - See [Run mapping with SLAM Toolbox](#run-mapping-with-slam-toolbox) for how to save the map.
-
-2. Start teleop:
-
-   ```bash
-   docker compose -f docker/docker-compose.yml run --rm teleop
-   ```
-
-   - Use the joystick or keyboard controls to cover open aisles, corners, and doorways.
-
-3. Start navigation with RViz:
-
-   ```bash
-   bash scripts/run_sim.sh --headless --rviz-nav --map /ros2_ws/maps/my_map.yaml
-   ```
-
-   - In RViz2, use **Set Initial Pose** from the top panel to align AMCL with the robot.
-   - Use **Nav2 Goal** from the top panel to send the robot to a target pose.
+* Autonomous navigation
+* Obstacle detection
+* Dynamic obstacle avoidance
+* Mapping
+* Localization
+* Path planning
+* Sensor fusion
+* Warehouse environment understanding
+* Waypoint navigation
+* Autonomous goal execution
+* Simulation-based testing
+* Future multi-robot coordination
 
 ---
 
-## Stack
+# Why Atlas?
 
-| Layer | Technology |
-| --- | --- |
-| OS target | Ubuntu 24.04 LTS |
-| ROS distribution | ROS 2 Jazzy Jalisco |
-| Primary simulator | Gazebo Harmonic |
-| Middleware | CycloneDDS |
-| Robot model | URDF/Xacro + generated mesh assets |
-| Control | `ros2_control`, `diff_drive_controller`, `joint_state_broadcaster` |
-| Teleoperation | `joy_linux`, `teleop_twist_joy`, convenience software stop |
-| Perception | 2-D LiDAR, optional 3-D point-cloud filtering, stereo/depth processing |
-| Localization | `robot_localization` EKF, AMCL |
-| Mapping | SLAM Toolbox online async and lifelong configs |
-| Navigation | Nav2 with MPPI controller and SMAC Hybrid-A* planner |
-| Containers | Docker, Docker Compose, VS Code Dev Container |
+Traditional warehouse automation often requires extensive facility-specific integration.
 
----
+Atlas is being developed around a different approach:
 
-## Repository Layout
+**Build a generalizable autonomy stack that can be adapted to different warehouse environments.**
+
+Instead of designing the autonomy system around a single fixed environment, Atlas separates:
 
 ```text
-rbot/
-├── .devcontainer/        # VS Code Dev Container setup
-├── .github/workflows/    # CI build, lint, and test workflow
-├── docker/               # Dockerfiles, compose services, entrypoint
-├── docs/                 # Architecture notes, sensor docs, tutorials
-├── maps/                 # Example occupancy maps and metadata
-├── scripts/              # Build, dependency, simulation, and mesh helpers
-└── src/
-    ├── bringup/          # Top-level simulation launch orchestration
-    ├── control/          # ros2_control and teleoperation packages
-    ├── localization/     # EKF and AMCL launch/config packages
-    ├── mapping/          # SLAM Toolbox launch/config packages
-    ├── navigation/       # Nav2 launch, params, behavior trees, client
-    ├── perception/       # LiDAR and camera processing packages
-    ├── robot/            # Robot description and mesh packages
-    ├── simulation/       # Gazebo packages and Isaac scaffolding
-    └── utils/            # Shared utility package placeholder
+Robot Hardware
+      │
+      ▼
+Sensor Layer
+      │
+      ▼
+Perception
+      │
+      ▼
+Localization
+      │
+      ▼
+World Representation
+      │
+      ▼
+Path Planning
+      │
+      ▼
+Motion Control
+      │
+      ▼
+Robot
+```
+
+This architecture allows the same core autonomy software to evolve across different robot platforms and warehouse layouts.
+
+---
+
+# System Architecture
+
+```text
+                         PROJECT ATLAS
+                              │
+             ┌────────────────┴────────────────┐
+             │                                 │
+       Robot Platforms                   Autonomy Stack
+             │                                 │
+       ┌─────┴─────┐                 ┌─────────┴─────────┐
+       │           │                 │                   │
+     TITAN      COLOSSUS        Perception          Navigation
+       │           │                 │                   │
+       └─────┬─────┘                 ├── LiDAR           ├── Nav2
+             │                       ├── Camera          ├── Planner
+             │                       ├── IMU             ├── Controller
+             │                       └── Sensor Fusion   └── Behaviors
+             │
+             └──────────────────────────┐
+                                        │
+                              Localization & Mapping
+                                        │
+                              ┌─────────┴─────────┐
+                              │                   │
+                           SLAM Toolbox          AMCL
+                              │                   │
+                              └─────────┬─────────┘
+                                        │
+                                     ROS 2
+                                        │
+                                Gazebo Harmonic
 ```
 
 ---
 
-## Quick Start: Docker
+# Autonomous Navigation
 
-Docker is the recommended path for first-time users because it keeps ROS, Gazebo, and system dependencies isolated.
+Atlas uses the ROS 2 navigation ecosystem as the foundation for autonomous mobility.
 
-### 1. Install host requirements
+The navigation pipeline is designed around:
 
-Install Docker with Compose support. For GUI simulation on Linux, make sure X11 forwarding is available.
+```text
+Sensors
+   │
+   ▼
+Perception
+   │
+   ▼
+Localization
+   │
+   ▼
+Map / World Model
+   │
+   ▼
+Global Planner
+   │
+   ▼
+Local Controller
+   │
+   ▼
+Velocity Commands
+   │
+   ▼
+Robot
+```
 
-### 2. Build and run the Gazebo stack
+The system can:
+
+1. Build a map of an environment.
+2. Localize the robot within the map.
+3. Receive a navigation goal.
+4. Generate a feasible path.
+5. Detect obstacles.
+6. Re-plan when the environment changes.
+7. Execute the trajectory.
+8. Continuously correct its motion using sensor feedback.
+
+---
+
+# Perception
+
+Atlas is designed to operate using multiple complementary sensors.
+
+Current simulation pathways include:
+
+* 2-D LiDAR
+* Depth camera
+* Stereo camera
+* IMU
+* GPS
+* Optional 3-D LiDAR
+
+The purpose of the perception layer is not simply to detect objects.
+
+It provides the information required for the robot to answer:
+
+> **What is around me, where is it, and how does it affect the path I should take?**
+
+Future development will expand the perception layer toward learned perception and semantic understanding of warehouse environments.
+
+---
+
+# Mapping & Localization
+
+Atlas supports both mapping and localization workflows.
+
+### Mapping
+
+SLAM Toolbox is used to construct occupancy maps while the robot explores an environment.
+
+```text
+LiDAR + Odometry + IMU
+          │
+          ▼
+     SLAM Toolbox
+          │
+          ▼
+      Occupancy Map
+```
+
+### Localization
+
+Once a map exists, the robot can localize against it using AMCL and sensor fusion.
+
+```text
+Saved Map
+   │
+   ├── LiDAR
+   ├── Odometry
+   └── IMU
+          │
+          ▼
+         AMCL
+          │
+          ▼
+       Robot Pose
+```
+
+The standard TF structure is:
+
+```text
+map
+ │
+ ▼
+odom
+ │
+ ▼
+base_footprint
+ │
+ ▼
+base_link
+ │
+ ├── lidar
+ ├── imu
+ ├── camera
+ └── other sensors
+```
+
+---
+
+# Obstacle Avoidance
+
+A core capability of Atlas is the ability to navigate around obstacles rather than simply follow a pre-computed route.
+
+The intended behavior is:
+
+```text
+             OBSTACLE
+                ███
+                ███
+                ███
+
+Robot ──────────►
+
+        Global Path
+──────────────────────────
+
+             ↓ obstacle detected
+
+Robot ────────╮
+              │
+              ╰──────────►
+                    New Safe Path
+```
+
+The navigation system continuously processes sensor information and can modify the local trajectory when obstacles appear.
+
+This provides the foundation for operation in dynamic warehouse environments where workers, forklifts, pallets, and other robots may change the environment.
+
+---
+
+# Simulation
+
+Gazebo Harmonic is the primary simulation environment.
+
+Simulation allows Atlas to test autonomy before deployment to physical hardware.
+
+Current simulation capabilities include:
+
+* Warehouse environments
+* Robot models
+* Sensor simulation
+* Differential-drive control
+* Mapping
+* Localization
+* Autonomous navigation
+* Obstacle avoidance
+* Navigation benchmarks
+* RViz visualization
+
+Example environments include:
+
+```text
+default warehouse
+demo warehouse
+large warehouse
+benchmark warehouse - easy
+benchmark warehouse - medium
+benchmark warehouse - hard
+```
+
+---
+
+# Technology Stack
+
+| Layer               | Technology              |
+| ------------------- | ----------------------- |
+| Operating System    | Ubuntu 24.04 LTS        |
+| Robotics Middleware | ROS 2 Jazzy             |
+| Simulation          | Gazebo Harmonic         |
+| Navigation          | Nav2                    |
+| Mapping             | SLAM Toolbox            |
+| Localization        | AMCL                    |
+| Sensor Fusion       | robot_localization      |
+| Robot Control       | ros2_control            |
+| Robot Description   | URDF / Xacro            |
+| Visualization       | RViz2                   |
+| Middleware          | CycloneDDS              |
+| Containers          | Docker / Docker Compose |
+| Development         | VS Code Dev Container   |
+| Languages           | C++, Python, XML, YAML  |
+
+---
+
+# Repository Structure
+
+```text
+Atlas-prototype/
+│
+├── .devcontainer/
+│
+├── .github/
+│   └── workflows/
+│
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
+│
+├── docs/
+│   ├── assets/
+│   ├── architecture/
+│   └── tutorials/
+│
+├── maps/
+│
+├── scripts/
+│   ├── build.sh
+│   ├── install_deps.sh
+│   └── run_sim.sh
+│
+└── src/
+    │
+    ├── bringup/
+    │
+    ├── control/
+    │
+    ├── localization/
+    │
+    ├── mapping/
+    │
+    ├── navigation/
+    │
+    ├── perception/
+    │
+    ├── robot/
+    │
+    ├── simulation/
+    │
+    └── utils/
+```
+
+---
+
+# Quick Start
+
+## Requirements
+
+Recommended development environment:
+
+* Ubuntu 24.04 LTS
+* ROS 2 Jazzy
+* Gazebo Harmonic
+* Docker
+* Docker Compose
+* NVIDIA GPU support where available for future perception workloads
+
+Docker is recommended for reproducible development.
+
+---
+
+## Run the Simulation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/iangicheha/Atlas-prototype.git
+cd Atlas-prototype
+```
+
+Start the simulation:
 
 ```bash
 bash scripts/run_sim.sh
 ```
 
-Useful variants:
+Headless mode:
 
 ```bash
 bash scripts/run_sim.sh --headless
+```
+
+Launch with RViz:
+
+```bash
 bash scripts/run_sim.sh --rviz
+```
+
+Launch navigation:
+
+```bash
 bash scripts/run_sim.sh --rviz-nav
-bash scripts/run_sim.sh --headless --rviz-nav --map /ros2_ws/maps/my_map.yaml
+```
+
+Launch mapping:
+
+```bash
 bash scripts/run_sim.sh --headless --rviz-mapping
-bash scripts/run_sim.sh --headless world:=large_warehouse gps_enabled:=true
-```
-
-The script starts services from `docker/docker-compose.yml` and launches the simulation stack inside the container. Use `--map` with `--rviz-nav` when AMCL/Nav2 should localize against a specific map YAML mounted under `/ros2_ws/maps/`.
-
-Extra arguments after the script flags are forwarded to the simulation launch service. Pass them as standard whitespace-free ROS launch tokens such as `name:=value`.
-
-Bundled Gazebo worlds include the default warehouse plus richer demo and benchmark scenarios:
-
-```bash
-bash scripts/run_sim.sh world:=demo_warehouse_visual
-bash scripts/run_sim.sh world:=benchmark_warehouse_easy
-bash scripts/run_sim.sh world:=benchmark_warehouse_medium
-bash scripts/run_sim.sh world:=benchmark_warehouse_hard
-```
-
-Use the same `world:=...` argument with `--rviz-mapping` to build maps in each scenario.
-
-### 3. Alternative Docker helper
-
-```bash
-zsh scripts/sim_docker.sh
-zsh scripts/sim_docker.sh --headless
-zsh scripts/sim_docker.sh --shell
-zsh scripts/sim_docker.sh world:=large_warehouse
-```
-
-Use this helper when you want direct `docker run` style control or an interactive shell in the simulation image.
-
----
-
-## Quick Start: Native Ubuntu 24.04
-
-Native setup is useful when you already work in a ROS 2 Jazzy environment.
-
-```bash
-bash scripts/install_deps.sh
-bash scripts/build.sh
-source install/setup.bash
-ros2 launch rlai_bringup simulation.launch.py
-```
-
-To launch a specific world:
-
-```bash
-ros2 launch rlai_bringup simulation.launch.py world:=small_warehouse
-```
-
-Headless Gazebo:
-
-```bash
-ros2 launch rlai_bringup simulation.launch.py headless:=true
 ```
 
 ---
 
-## Common Workflows
+# Mapping Workflow
 
-### Launch simulation with default localization
-
-```bash
-ros2 launch rlai_bringup simulation.launch.py localization_enabled:=true
-```
-
-This starts Gazebo, robot description publishing, ros2_control, and EKF localization.
-
-### Enable joystick teleoperation
+Start the mapping environment:
 
 ```bash
-ros2 launch rlai_bringup simulation.launch.py teleop_enabled:=true
+bash scripts/run_sim.sh --headless --rviz-mapping
 ```
 
-The joystick configuration lives in:
+Drive the robot through the environment using teleoperation.
 
-```text
-src/control/rlai_teleop/config/joystick.yaml
+Ensure the robot covers:
+
+* Long aisles
+* Corners
+* Intersections
+* Doorways
+* Open areas
+* Areas around shelving
+
+Save the resulting map:
+
+```bash
+docker exec -it rlai_sim_mapping \
+ros2 run nav2_map_server map_saver_cli \
+-f /ros2_ws/maps/my_map
 ```
 
-The convenience software stop service is available at:
+---
+
+# Autonomous Navigation
+
+Once a map has been created:
+
+```bash
+bash scripts/run_sim.sh \
+  --headless \
+  --rviz-nav \
+  --map /ros2_ws/maps/my_map.yaml
+```
+
+In RViz2:
+
+1. Set the robot's initial pose.
+2. Select **Nav2 Goal**.
+3. Click a target location.
+4. Observe the planner generate a path.
+5. Observe the robot execute the trajectory.
+
+The navigation stack is responsible for planning and executing the movement.
+
+---
+
+# Teleoperation
+
+Teleoperation can be used to manually inspect environments and create maps.
+
+```bash
+docker compose \
+  -f docker/docker-compose.yml \
+  run --rm teleop
+```
+
+A software emergency stop is also available:
 
 ```bash
 ros2 service call /e_stop std_srvs/srv/Trigger {}
 ```
 
-This service publishes zero velocity commands while engaged.
+---
 
-### Run mapping with SLAM Toolbox
+# Native ROS 2 Development
+
+For a native Ubuntu environment:
+
+```bash
+bash scripts/install_deps.sh
+bash scripts/build.sh
+source install/setup.bash
+```
+
+Launch the simulation:
+
+```bash
+ros2 launch rlai_bringup simulation.launch.py
+```
+
+Launch a specific warehouse:
 
 ```bash
 ros2 launch rlai_bringup simulation.launch.py \
-  mapping_enabled:=true \
-  slam_rviz_enabled:=true
-```
-
-Save the map from the mapping container when coverage looks good. When launched through the quick path, the mapping container is named `rlai_sim_mapping`:
-
-```bash
-docker exec -it rlai_sim_mapping ros2 run nav2_map_server map_saver_cli -f /ros2_ws/maps/my_map
-```
-
-Do not enable `mapping_enabled:=true` and `use_amcl:=true` at the same time. Both publish `map -> odom`.
-
-### Run AMCL with a saved map
-
-```bash
-ros2 launch rlai_bringup simulation.launch.py \
-  use_amcl:=true \
-  map_yaml_file:=/absolute/path/to/map.yaml
-```
-
-Example maps are stored in `maps/`.
-
-### Launch Nav2 directly
-
-```bash
-ros2 launch rlai_navigation navigation.launch.py \
-  map:=/absolute/path/to/map.yaml
-```
-
-Use this when localization is already running and you want to focus on Nav2 behavior.
-
-### Send a navigation goal programmatically
-
-```bash
-ros2 run rlai_navigation nav_client --ros-args \
-  -p x:=3.0 \
-  -p y:=2.0 \
-  -p yaw:=0.0
-```
-
-Patrol mode:
-
-```bash
-ros2 run rlai_navigation nav_client --ros-args -p mode:=patrol
+  world:=large_warehouse
 ```
 
 ---
 
-## Package Index
+# Development
 
-| Package | Type | Purpose |
-| --- | --- | --- |
-| `rlai_description` | `ament_cmake` | Robot URDF/Xacro, sensor mounts, payload platform, RViz configs |
-| `rlai_meshes` | `ament_cmake` | Mesh assets used by the robot description |
-| `rlai_gazebo` | `ament_cmake` | Gazebo worlds, launch files, ROS-Gazebo bridge config |
-| `rlai_isaac` | `ament_python` | Scaffold package for planned Isaac Sim integration |
-| `rlai_control` | `ament_cmake` | `ros2_control` controller configuration and launch |
-| `rlai_teleop` | `ament_python` | Joystick teleoperation and convenience software stop node |
-| `rlai_lidar_processing` | `ament_cmake` | Optional 3-D point-cloud height filtering and voxel downsampling |
-| `rlai_camera_processing` | `ament_cmake` | Stereo disparity and depth point-cloud processing launch/config |
-| `rlai_localization` | `ament_python` | IMU filtering, EKF, and AMCL launch/config |
-| `rlai_mapping` | `ament_python` | SLAM Toolbox mapping and map-server launch/config |
-| `rlai_navigation` | `ament_python` | Nav2 parameters, behavior trees, launch, and action client |
-| `rlai_bringup` | `ament_python` | Top-level simulation bringup and stack orchestration |
-| `rlai_utils` | `ament_python` | Shared utility package scaffold |
-
----
-
-## Architecture Notes
-
-### TF ownership
-
-The stack uses a standard mobile robot TF chain:
-
-```text
-map -> odom -> base_footprint -> base_link -> sensor frames
-```
-
-Ownership is intentionally split:
-
-- EKF publishes `odom -> base_footprint`.
-- AMCL or SLAM Toolbox publishes `map -> odom`.
-- Robot State Publisher publishes `base_footprint -> base_link` and sensor frames.
-
-Avoid enabling multiple nodes that publish the same transform.
-
-### Command velocity path
-
-```text
-teleop / Nav2 -> /cmd_vel -> velocity_smoother -> /diff_drive_controller/cmd_vel
-```
-
-The stack uses `TwistStamped` commands because the Jazzy `diff_drive_controller` expects stamped velocity input. The software stop node also publishes to `/cmd_vel`; it is a convenience mechanism for simulation and development.
-
-### Simulation bridge
-
-Gazebo topics are bridged through:
-
-```text
-src/simulation/rlai_gazebo/config/ros_gz_bridge.yaml
-```
-
-`/joint_states` is intentionally not bridged because `joint_state_broadcaster` owns that ROS topic.
-
----
-
-## References and Prior Art
-
-`rbot` builds on established ROS 2 projects and examples:
-
-- [ROS 2 Jazzy documentation](https://docs.ros.org/en/jazzy/)
-- [Gazebo Harmonic documentation](https://gazebosim.org/docs/harmonic/)
-- [Nav2 documentation and tutorials](https://docs.nav2.org/)
-- [SLAM Toolbox](https://github.com/SteveMacenski/slam_toolbox)
-- [`robot_localization`](https://github.com/cra-ros-pkg/robot_localization)
-- [`ros2_control`](https://control.ros.org/jazzy/index.html)
-- [BCR Bot](https://github.com/blackcoffeerobotics/bcr_bot)
-- [Linorobot2](https://github.com/linorobot/linorobot2)
-- [ROSNav](https://github.com/ApolloAuto/rosnav)
-
----
-
-## Development
-
-### Build
+Build the workspace:
 
 ```bash
 bash scripts/build.sh
 ```
 
-Or manually:
+Or:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+
+colcon build \
+  --symlink-install \
+  --cmake-args \
+  -DCMAKE_BUILD_TYPE=Release
 ```
 
-### Test
+Run tests:
 
 ```bash
 source install/setup.bash
-colcon test --event-handlers console_cohesion+ --return-code-on-test-failure
+
+colcon test \
+  --event-handlers console_cohesion+ \
+  --return-code-on-test-failure
+```
+
+Check results:
+
+```bash
 colcon test-result --verbose
 ```
 
-### Lint Python packages
+---
 
-```bash
-flake8 src --max-line-length=100 --extend-ignore=E203 --exclude=__pycache__
-```
+# Development Roadmap
 
-### Validate launch-file syntax quickly
+Project Atlas is being developed progressively toward physical warehouse deployment.
 
-```bash
-python3 -m compileall -q src scripts
-```
+### Phase 1 — Simulation Foundation
+
+* [x] ROS 2 architecture
+* [x] Gazebo simulation
+* [x] Robot description
+* [x] Sensor simulation
+* [x] `ros2_control`
+* [x] Teleoperation
+* [x] SLAM
+* [x] Localization
+* [x] Nav2 integration
+* [x] Warehouse environments
+
+### Phase 2 — Autonomous Mobility
+
+* [x] Autonomous goal navigation
+* [x] Global path planning
+* [x] Local trajectory control
+* [x] Dynamic obstacle handling
+* [ ] Expanded warehouse benchmarks
+* [ ] Automated navigation evaluation
+* [ ] Recovery behavior evaluation
+* [ ] Long-duration autonomy testing
+
+### Phase 3 — Intelligent Perception
+
+* [ ] Learned object detection
+* [ ] Semantic perception
+* [ ] Pallet detection
+* [ ] Human detection
+* [ ] Warehouse scene understanding
+* [ ] Learned obstacle classification
+* [ ] Perception-driven navigation
+
+### Phase 4 — Physical Atlas
+
+* [ ] TITAN prototype
+* [ ] COLOSSUS prototype
+* [ ] Embedded compute integration
+* [ ] Real sensor integration
+* [ ] Motor controller integration
+* [ ] Hardware-in-the-loop testing
+* [ ] Physical warehouse trials
+
+### Phase 5 — Multi-Robot Warehouse Intelligence
+
+* [ ] Multi-robot coordination
+* [ ] Fleet management
+* [ ] Task allocation
+* [ ] Traffic management
+* [ ] Collision-aware fleet planning
+* [ ] Warehouse digital twin integration
 
 ---
 
-## Troubleshooting
+# Research Direction
 
-### Gazebo GUI does not open from Docker
+The long-term objective of Atlas is not simply to reproduce existing mobile robot navigation.
 
-Allow local Docker containers to connect to your X server:
+The project investigates how autonomous mobile robots can become more **generalizable, adaptable, and intelligent across different warehouse environments**.
 
-```bash
-xhost +local:docker
+The autonomy stack is therefore being developed around three increasingly important capabilities:
+
+```text
+                ATLAS AUTONOMY
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+     PERCEIVE     REASON        ACT
+        │            │            │
+        ▼            ▼            ▼
+     Sensors      World Model   Motion
+     Objects      Context       Navigation
+     Obstacles    Goals         Manipulation
 ```
 
-Then rerun the simulation script.
-
-### ROS commands cannot find packages
-
-Source the workspace after building:
-
-```bash
-source install/setup.bash
-```
-
-If using Docker, open a shell in the built container and source the installed workspace there.
-
-### Nav2 or AMCL cannot configure
-
-Check that a valid map file was provided when `use_amcl:=true`:
-
-```bash
-ros2 launch rlai_bringup simulation.launch.py \
-  use_amcl:=true \
-  map_yaml_file:=/absolute/path/to/map.yaml
-```
-
-### TF conflicts or unstable localization
-
-Make sure only one component publishes each transform:
-
-- EKF: `odom -> base_footprint`
-- AMCL or SLAM Toolbox: `map -> odom`
-- Robot State Publisher: robot links and sensor frames
-
-Do not run AMCL and SLAM mapping together unless you intentionally change TF ownership.
-
-### Docker build is slow
-
-The Gazebo image installs ROS, Gazebo, Nav2, SLAM, perception, and control dependencies. The first build can take several minutes; later builds should reuse Docker layers.
+The ultimate direction is a system capable of understanding a warehouse as an operational environment rather than simply navigating a static map.
 
 ---
 
-## Roadmap
+# Project Philosophy
 
-Future extension points:
+Atlas follows several principles:
 
-- Isaac Sim integration
-- Expanded benchmarks and automated scenario tests
-- Additional warehouse, outdoor, and mixed-layout environments
-- More perception and autonomy examples
+### 1. Simulation before deployment
+
+Autonomy should be tested extensively in simulation before being transferred to physical hardware.
+
+### 2. Hardware-independent autonomy
+
+The core intelligence should not be tightly coupled to one mechanical platform.
+
+### 3. Generalizable navigation
+
+The system should be capable of adapting to different layouts rather than relying entirely on hand-tuned environments.
+
+### 4. Perception-driven behavior
+
+The robot should use what it perceives to continuously update its understanding of the environment.
+
+### 5. Reproducible robotics
+
+Simulation environments, configurations, and development workflows should be reproducible by other researchers and engineers.
 
 ---
 
-## Contributing
+# Team
 
-Contributions are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for development workflow, coding standards, and pull request guidance.
+**Faraday's Lab**
 
-Good first contributions include:
+### Project Atlas
 
-- Improving setup instructions or troubleshooting notes.
-- Adding reproducible simulation scenarios.
-- Tuning navigation, localization, or mapping configs with before/after evidence.
-- Adding tests or validation scripts for launch files, URDF/Xacro, and Gazebo worlds.
+**Ian Gicheha**
+**Joe Albert**
+**Ray Wekesa**
+
+Electrical & Mechatronics Engineering
 
 ---
 
-## License
+# Acknowledgements
 
-This project is licensed under the [Apache License 2.0](LICENSE).
+Atlas builds upon the open-source robotics ecosystem, including:
 
-Copyright 2026 Robolabs AI (RLXAI ROBOLABSAI PRIVATE LIMITED).
+* ROS 2
+* Gazebo
+* Nav2
+* SLAM Toolbox
+* `robot_localization`
+* `ros2_control`
+* RViz2
+
+The project is intended to contribute back to the robotics community through reproducible simulation, research, and autonomous robotics development.
+
+---
+
+# License
+
+This project is licensed under the **Apache License 2.0**.
+
+See [`LICENSE`](LICENSE) for the complete license text.
+
+---
+
+<p align="center">
+  <strong>PROJECT ATLAS</strong><br>
+  Autonomous Mobile Robotics for Warehouse Logistics
+</p>
+
+<p align="center">
+  Built by <strong>Faraday's Lab</strong>
+</p>
