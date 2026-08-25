@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 # scripts/sim_docker.sh
-# Build (if needed) and run the rbot Gazebo simulation inside Docker.
+# Build (if needed) and run the Atlas Gazebo simulation inside Docker.
 #
 # Usage:
 #   zsh scripts/sim_docker.sh              # build + run (small_warehouse)
@@ -16,7 +16,7 @@ set -euo pipefail
 SCRIPT_DIR="${0:A:h}"
 REPO_ROOT="${SCRIPT_DIR:h}"
 COMPOSE_FILE="${REPO_ROOT}/docker/docker-compose.yml"
-IMAGE_NAME="rlai-bot:gazebo"
+IMAGE_NAME="Atlas-prototype:gazebo"
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 BUILD_ONLY=false
@@ -71,7 +71,7 @@ for arg in "${LAUNCH_ARGS[@]+"${LAUNCH_ARGS[@]}"}"; do
 done
 
 # ── Run simulation ────────────────────────────────────────────────────────────
-echo "==> Launching rbot simulation:"
+echo "==> Launching Atlas simulation:"
 echo "    World  : $WORLD"
 echo "    Headless: $HEADLESS"
 [[ -n "$EXTRA_LAUNCH" ]] && echo "    Extra args: $EXTRA_LAUNCH"
@@ -86,9 +86,9 @@ if [[ "$HEADLESS" == true ]]; then
     --group-add video \
     -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
     -e GZ_HEADLESS_RENDERING=1 \
-    -e GZ_SIM_RESOURCE_PATH=/ros2_ws/install/rlai_gazebo/share/rlai_gazebo:/ros2_ws/install/rlai_meshes/share \
+    -e GZ_SIM_RESOURCE_PATH=/ros2_ws/install/atlas_gazebo/share/atlas_gazebo:/ros2_ws/install/atlas_meshes/share \
     "$IMAGE_NAME" \
-    ros2 launch rlai_gazebo gazebo.launch.py \
+    ros2 launch atlas_gazebo gazebo.launch.py \
       world:="$WORLD" \
       lidar_2d_enabled:=true \
       depth_camera_enabled:=true \
@@ -105,11 +105,11 @@ else
     -e XAUTHORITY=/tmp/.docker.xauth \
     -e QT_X11_NO_MITSHM=1 \
     -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
-    -e GZ_SIM_RESOURCE_PATH=/ros2_ws/install/rlai_gazebo/share/rlai_gazebo:/ros2_ws/install/rlai_meshes/share \
+    -e GZ_SIM_RESOURCE_PATH=/ros2_ws/install/atlas_gazebo/share/atlas_gazebo:/ros2_ws/install/atlas_meshes/share \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
     -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw \
     "$IMAGE_NAME" \
-    ros2 launch rlai_gazebo gazebo.launch.py \
+    ros2 launch atlas_gazebo gazebo.launch.py \
       world:="$WORLD" \
       lidar_2d_enabled:=true \
       depth_camera_enabled:=true \

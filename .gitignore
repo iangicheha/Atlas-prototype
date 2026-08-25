@@ -42,7 +42,7 @@ phases/
 plan/
 .claude/
 ./scripts/generate_meshes.py
-./scripts/rbot.svg
+./scripts/Atlas.svg
 
 
 tests/test_branding.py

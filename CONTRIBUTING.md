@@ -1,4 +1,4 @@
-# Contributing to rbot
+# Contributing to Atlas
 
 Thank you for your interest in contributing. This document covers the process for reporting issues, proposing changes, and submitting pull requests.
 
@@ -6,7 +6,7 @@ Thank you for your interest in contributing. This document covers the process fo
 
 ## Table of Contents
 
-- [Contributing to rbot](#contributing-to-rbot)
+- [Contributing to Atlas](#contributing-to-Atlas)
   - [Table of Contents](#table-of-contents)
   - [Code of Conduct](#code-of-conduct)
   - [Getting Started](#getting-started)
@@ -31,13 +31,13 @@ All contributors are expected to interact respectfully. Please be constructive a
 
 1. Fork the repository and clone your fork:
    ```bash
-   git clone https://github.com/rlxai/rbot.git
-   cd rbot
+   git clone https://github.com/iangicheha/Atlas.git
+   cd Atlas
    ```
 
 2. Set up the environment using Docker (recommended):
    ```bash
-   docker build -f docker/Dockerfile.gazebo -t rlai-bot:dev .
+   docker build -f docker/Dockerfile.gazebo -t Atlas-prototype:dev .
    ```
 
    Or natively on Ubuntu 24.04 with ROS 2 Jazzy:
@@ -57,7 +57,7 @@ All contributors are expected to interact respectfully. Please be constructive a
 
 ### Reporting Bugs
 
-Open a [GitHub Issue](https://github.com/rlxai/rbot/issues) and include:
+Open a [GitHub Issue](https://github.com/iangicheha/Atlas/issues) and include:
 
 - ROS 2 distribution and Gazebo version (`ros2 --version`, `gz sim --version`)
 - Whether you are running natively or in Docker
@@ -112,11 +112,11 @@ PRs should target `main` (or `develop` for large features).
 
 ## Coding Standards
 
-**C++ packages** (`rlai_description`, `rlai_gazebo`, `rlai_control`, etc.)
+**C++ packages** (`atlas_description`, `atlas_gazebo`, `atlas_control`, etc.)
 - Follow the [ROS 2 C++ style guide](https://docs.ros.org/en/jazzy/Contributing/Code-Style-Language-Versions.html)
 - `CMAKE_BUILD_TYPE=Release` is enforced by `colcon.meta`
 
-**Python packages** (`rlai_bringup`, `rlai_navigation`, `rlai_mapping`, etc.)
+**Python packages** (`atlas_bringup`, `atlas_navigation`, `atlas_mapping`, etc.)
 - PEP 8, max line length 100 (enforced by CI via `ament_flake8`)
 - Use `rclpy` logging (`self.get_logger()`) rather than `print()`
 
@@ -142,8 +142,8 @@ Common types: `feat`, `fix`, `docs`, `refactor`, `test`, `ci`, `chore`
 
 Examples:
 ```
-feat(rlai_navigation): add MPPI tuning for narrow corridor scenarios
-fix(rlai_gazebo): correct spawn position in small_warehouse world
+feat(atlas_navigation): add MPPI tuning for narrow corridor scenarios
+fix(atlas_gazebo): correct spawn position in small_warehouse world
 docs(architecture): add system-level overview diagram
 ```
 
@@ -151,4 +151,4 @@ docs(architecture): add system-level overview diagram
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/rlxai/rbot/discussions) or reach out at **contact@robolabs.ai**.
+Open a [GitHub Discussion](https://github.com/iangicheha/Atlas/discussions) or reach out at **iangicheha@users.noreply.github.com**.

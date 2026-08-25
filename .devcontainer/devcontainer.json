@@ -1,5 +1,5 @@
 {
-  "name": "rbot",
+  "name": "Atlas",
   "dockerFile": "Dockerfile",
   "runArgs": [
     "--network=host",

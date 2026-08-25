@@ -46,7 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ros2_ws
-COPY . src/rlai-bot/
+COPY . src/Atlas-prototype/
 
 # teleop_twist_joy and joy are installed explicitly above; skip keys that may resolve differently across ROS indexes.
 RUN apt-get update && \

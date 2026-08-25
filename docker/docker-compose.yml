@@ -1,5 +1,5 @@
 # docker/docker-compose.yml
-# Launches the rbot Gazebo Harmonic simulation inside Docker.
+# Launches the Atlas Gazebo Harmonic simulation inside Docker.
 #
 # Prerequisites (run once on the host before starting):
 #   xhost +local:docker
@@ -25,26 +25,26 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.gazebo
-    image: rlai-bot:gazebo
-    container_name: rlai_sim
+    image: Atlas-prototype:gazebo
+    container_name: atlas_sim
     # ── GUI / X11 ─────────────────────────────────────────────────────────
     environment:
       - DISPLAY=${DISPLAY:-:0}
       - XAUTHORITY=/tmp/.docker.xauth
       - QT_X11_NO_MITSHM=1
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      # model://rlai_meshes/... is resolved by appending 'rlai_meshes/' to each
-      # search-path entry → point at the parent share/ dir, not share/rlai_meshes/
-      - GZ_SIM_RESOURCE_PATH=/ros2_ws/install/rlai_gazebo/share/rlai_gazebo:/ros2_ws/install/rlai_meshes/share
+      # model://atlas_meshes/... is resolved by appending 'atlas_meshes/' to each
+      # search-path entry → point at the parent share/ dir, not share/atlas_meshes/
+      - GZ_SIM_RESOURCE_PATH=/ros2_ws/install/atlas_gazebo/share/atlas_gazebo:/ros2_ws/install/atlas_meshes/share
       # Uncomment if hardware rendering fails (CPU fallback, slower):
       # - LIBGL_ALWAYS_SOFTWARE=1
       # Set to 'true' (via run_sim.sh --headless or host env) to skip the GUI
-      - RLAI_GZ_HEADLESS=${RLAI_GZ_HEADLESS:-false}
+      - ATLAS_GZ_HEADLESS=${ATLAS_GZ_HEADLESS:-false}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
       # Bind-mount src so launch/config edits apply without rebuilding
-      - ../src:/ros2_ws/src/rlai-bot/src:ro
+      - ../src:/ros2_ws/src/Atlas-prototype/src:ro
     # ── GPU (Intel / AMD via DRI) ────────────────────────────────────────
     devices:
       - /dev/dri:/dev/dri
@@ -58,7 +58,7 @@ services:
     # AMCL is started separately via the 'nav' service.
     # SLAM mapping is available via the 'sim_mapping' service.
     command: >-
-      ros2 launch rlai_bringup simulation.launch.py
+      ros2 launch atlas_bringup simulation.launch.py
         world:=small_warehouse
         x:=1.0
         y:=1.0
@@ -70,8 +70,8 @@ services:
         gps_enabled:=false
         localization_enabled:=true
         mapping_enabled:=false
-        headless:=${RLAI_GZ_HEADLESS:-false}
-        ${RLAI_EXTRA_ARGS:-}
+        headless:=${ATLAS_GZ_HEADLESS:-false}
+        ${ATLAS_EXTRA_ARGS:-}
     stdin_open: true
     tty: true
     restart: "no"
@@ -83,19 +83,19 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.gazebo
-    image: rlai-bot:gazebo
-    container_name: rlai_sim_mapping
+    image: Atlas-prototype:gazebo
+    container_name: atlas_sim_mapping
     environment:
       - DISPLAY=${DISPLAY:-:0}
       - XAUTHORITY=/tmp/.docker.xauth
       - QT_X11_NO_MITSHM=1
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      - GZ_SIM_RESOURCE_PATH=/ros2_ws/install/rlai_gazebo/share/rlai_gazebo:/ros2_ws/install/rlai_meshes/share
-      - RLAI_GZ_HEADLESS=${RLAI_GZ_HEADLESS:-false}
+      - GZ_SIM_RESOURCE_PATH=/ros2_ws/install/atlas_gazebo/share/atlas_gazebo:/ros2_ws/install/atlas_meshes/share
+      - ATLAS_GZ_HEADLESS=${ATLAS_GZ_HEADLESS:-false}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
-      - ../src:/ros2_ws/src/rlai-bot/src:ro
+      - ../src:/ros2_ws/src/Atlas-prototype/src:ro
       - ../maps:/ros2_ws/maps:rw
     devices:
       - /dev/dri:/dev/dri
@@ -104,7 +104,7 @@ services:
     network_mode: host
     ipc: host
     command: >-
-      ros2 launch rlai_bringup simulation.launch.py
+      ros2 launch atlas_bringup simulation.launch.py
         world:=small_warehouse
         lidar_2d_enabled:=true
         lidar_3d_enabled:=false
@@ -115,16 +115,16 @@ services:
         localization_enabled:=true
         mapping_enabled:=true
         slam_rviz_enabled:=false
-        headless:=${RLAI_GZ_HEADLESS:-false}
-        ${RLAI_EXTRA_ARGS:-}
+        headless:=${ATLAS_GZ_HEADLESS:-false}
+        ${ATLAS_EXTRA_ARGS:-}
     stdin_open: true
     tty: true
     restart: "no"
 
   # ── RViz2 — connects to the running sim via host DDS ──────────────────
   rviz:
-    image: rlai-bot:gazebo
-    container_name: rlai_rviz
+    image: Atlas-prototype:gazebo
+    container_name: atlas_rviz
     environment:
       - DISPLAY=${DISPLAY:-:0}
       - XAUTHORITY=/tmp/.docker.xauth
@@ -133,7 +133,7 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
-      - ../src:/ros2_ws/src/rlai-bot/src:ro
+      - ../src:/ros2_ws/src/Atlas-prototype/src:ro
     devices:
       - /dev/dri:/dev/dri
     group_add:
@@ -142,7 +142,7 @@ services:
     ipc: host
     command: >
       ros2 run rviz2 rviz2
-        -d /ros2_ws/install/rlai_gazebo/share/rlai_gazebo/rviz/gazebo_live.rviz
+        -d /ros2_ws/install/atlas_gazebo/share/atlas_gazebo/rviz/gazebo_live.rviz
         --ros-args -p use_sim_time:=true
     stdin_open: true
     tty: true
@@ -154,12 +154,12 @@ services:
   # Maps are stored in /ros2_ws/maps/ inside the container.
   # Usage: docker compose -f docker/docker-compose.yml up nav
   nav:
-    image: rlai-bot:gazebo
-    container_name: rlai_nav
+    image: Atlas-prototype:gazebo
+    container_name: atlas_nav
     environment:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     volumes:
-      - ../src:/ros2_ws/src/rlai-bot/src:ro
+      - ../src:/ros2_ws/src/Atlas-prototype/src:ro
       - ../maps:/ros2_ws/maps:ro
     network_mode: host
     ipc: host
@@ -169,10 +169,10 @@ services:
       - -c
       - |
         cd /ros2_ws &&
-        colcon build --packages-select rlai_localization rlai_navigation --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release 2>&1 &&
+        colcon build --packages-select atlas_localization atlas_navigation --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release 2>&1 &&
         . install/setup.bash &&
-        ros2 launch rlai_localization localization.launch.py use_amcl:=true map_yaml_file:=${RLAI_MAP_YAML:-/ros2_ws/maps/my_map.yaml} &
-        ros2 launch rlai_navigation navigation.launch.py
+        ros2 launch atlas_localization localization.launch.py use_amcl:=true map_yaml_file:=${ATLAS_MAP_YAML:-/ros2_ws/maps/my_map.yaml} &
+        ros2 launch atlas_navigation navigation.launch.py
     stdin_open: true
     tty: true
     restart: "no"
@@ -182,8 +182,8 @@ services:
   # Use the SetInitialPose tool (arrow icon) to relocalize AMCL.
   # Usage: docker compose -f docker/docker-compose.yml up rviz_nav
   rviz_nav:
-    image: rlai-bot:gazebo
-    container_name: rlai_rviz_nav
+    image: Atlas-prototype:gazebo
+    container_name: atlas_rviz_nav
     environment:
       - DISPLAY=${DISPLAY:-:0}
       - XAUTHORITY=/tmp/.docker.xauth
@@ -192,7 +192,7 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
-      - ../src:/ros2_ws/src/rlai-bot/src:ro
+      - ../src:/ros2_ws/src/Atlas-prototype/src:ro
     devices:
       - /dev/dri:/dev/dri
     group_add:
@@ -204,17 +204,17 @@ services:
       - -c
       - |
         cd /ros2_ws &&
-        colcon build --packages-select rlai_navigation --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release 2>&1 &&
+        colcon build --packages-select atlas_navigation --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release 2>&1 &&
         . install/setup.bash &&
-        ros2 run rviz2 rviz2 -d /ros2_ws/install/rlai_navigation/share/rlai_navigation/rviz/navigation.rviz --ros-args -p use_sim_time:=true
+        ros2 run rviz2 rviz2 -d /ros2_ws/install/atlas_navigation/share/atlas_navigation/rviz/navigation.rviz --ros-args -p use_sim_time:=true
     stdin_open: true
     tty: true
     restart: "no"
 
   # ── RViz2 mapping view — SLAM overhead map + LaserScan + TF ───────────
   rviz_mapping:
-    image: rlai-bot:gazebo
-    container_name: rlai_rviz_mapping
+    image: Atlas-prototype:gazebo
+    container_name: atlas_rviz_mapping
     environment:
       - DISPLAY=${DISPLAY:-:0}
       - XAUTHORITY=/tmp/.docker.xauth
@@ -223,7 +223,7 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-/tmp/.docker.xauth}:/tmp/.docker.xauth:rw
-      - ../src:/ros2_ws/src/rlai-bot/src:ro
+      - ../src:/ros2_ws/src/Atlas-prototype/src:ro
     devices:
       - /dev/dri:/dev/dri
     group_add:
@@ -232,7 +232,7 @@ services:
     ipc: host
     command: >
       ros2 run rviz2 rviz2
-        -d /ros2_ws/install/rlai_mapping/share/rlai_mapping/rviz/mapping.rviz
+        -d /ros2_ws/install/atlas_mapping/share/atlas_mapping/rviz/mapping.rviz
         --ros-args -p use_sim_time:=true
     stdin_open: true
     tty: true
@@ -243,8 +243,8 @@ services:
   # enable_stamped_cmd_vel: true setting.  Requires sim to be running first.
   # Usage: docker compose -f docker/docker-compose.yml run --rm teleop
   teleop:
-    image: rlai-bot:gazebo
-    container_name: rlai_teleop
+    image: Atlas-prototype:gazebo
+    container_name: atlas_teleop
     environment:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     network_mode: host
@@ -262,8 +262,8 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.gazebo
-    image: rlai-bot:gazebo
-    container_name: rlai_shell
+    image: Atlas-prototype:gazebo
+    container_name: atlas_shell
     environment:
       - DISPLAY=${DISPLAY:-:0}
       - QT_X11_NO_MITSHM=1

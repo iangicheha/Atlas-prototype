@@ -1,5 +1,5 @@
 # rosdep.yaml
-# Custom rosdep keys for rbot packages.
+# Custom rosdep keys for Atlas packages.
 # All standard ROS 2 dependencies are resolved from the official rosdep database.
 # Add entries here only for non-standard system packages.
 #

@@ -1,6 +1,6 @@
 #!/bin/bash
 # scripts/install_deps.sh
-# Installs all system-level dependencies for rbot on Ubuntu 24.04 (native).
+# Installs all system-level dependencies for Atlas on Ubuntu 24.04 (native).
 # Run once on a fresh machine before building the workspace.
 set -e
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # scripts/build.sh
-# Builds the rbot ROS 2 workspace using colcon.
+# Builds the Atlas ROS 2 workspace using colcon.
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

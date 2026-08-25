@@ -1,5 +1,5 @@
 ---
-# rbot — C++ code style configuration
+# Atlas — C++ code style configuration
 # Matches ament_clang_format defaults (ROS 2 standard: Google + 2-space indent)
 Language: Cpp
 BasedOnStyle: Google

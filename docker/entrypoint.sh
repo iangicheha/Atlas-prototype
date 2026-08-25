@@ -16,8 +16,8 @@ export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/lib:${GZ_SIM_SYSTEM_PLUGIN_PATH:
 
 # Sync any mesh files present in the bind-mounted src but missing from install.
 # This handles STL files generated after the image was built (e.g. wheel_cap.stl).
-MESH_SRC=/ros2_ws/src/rlai-bot/src/robot/rlai_meshes/meshes
-MESH_DST=/ros2_ws/install/rlai_meshes/share/rlai_meshes/meshes
+MESH_SRC=/ros2_ws/src/Atlas-prototype/src/robot/atlas_meshes/meshes
+MESH_DST=/ros2_ws/install/atlas_meshes/share/atlas_meshes/meshes
 if [ -d "$MESH_SRC" ] && [ -d "$MESH_DST" ]; then
     for stl in "$MESH_SRC"/*.stl; do
         name=$(basename "$stl")
@@ -29,8 +29,8 @@ fi
 
 # Sync any URDF/xacro files present in the bind-mounted src but missing from install.
 # This handles new .urdf.xacro files added after the image was built.
-URDF_SRC=/ros2_ws/src/rlai-bot/src/robot/rlai_description/urdf
-URDF_DST=/ros2_ws/install/rlai_description/share/rlai_description/urdf
+URDF_SRC=/ros2_ws/src/Atlas-prototype/src/robot/atlas_description/urdf
+URDF_DST=/ros2_ws/install/atlas_description/share/atlas_description/urdf
 if [ -d "$URDF_SRC" ] && [ -d "$URDF_DST" ]; then
     while IFS= read -r -d '' f; do
         rel="${f#"$URDF_SRC"/}"

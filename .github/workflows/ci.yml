@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          path: ros2_ws/src/rbot
+          path: ros2_ws/src/Atlas
 
       - name: Install system dependencies
         run: |
@@ -61,7 +61,7 @@ jobs:
         run: |
           # Limit linting to repository packages to avoid generated ROS workspace files.
           cd ros2_ws
-          python3 -m flake8 src/rbot/src \
+          python3 -m flake8 src/Atlas/src \
             --max-line-length=100 \
             --extend-ignore=E203,D100,D101,D103,D104,D107,D301,D400,I100,I101,I201,Q000,CNL100 \
             --exclude=__pycache__

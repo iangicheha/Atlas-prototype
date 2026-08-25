@@ -1,6 +1,6 @@
 #!/bin/bash
 # scripts/run_sim.sh
-# Launches rbot in Gazebo Harmonic (inside Docker).
+# Launches Atlas in Gazebo Harmonic (inside Docker).
 #
 # Usage:
 #   bash scripts/run_sim.sh                           # Gazebo GUI
@@ -81,16 +81,16 @@ fi
 
 # Export launch flags — docker-compose.yml reads these from the host env.
 # Extra launch args are standard name:=value tokens and should not contain whitespace.
-export RLAI_GZ_HEADLESS="$HEADLESS"
-export RLAI_MAP_YAML="$MAP_YAML"
-RLAI_EXTRA_ARGS="${ROSARGS[*]}"
-export RLAI_EXTRA_ARGS
+export ATLAS_GZ_HEADLESS="$HEADLESS"
+export ATLAS_MAP_YAML="$MAP_YAML"
+ATLAS_EXTRA_ARGS="${ROSARGS[*]}"
+export ATLAS_EXTRA_ARGS
 
-echo "==> Launching rbot simulation (Gazebo Harmonic)"
+echo "==> Launching Atlas simulation (Gazebo Harmonic)"
 echo "    RViz:         $RVIZ"
 echo "    RViz nav:     $RVIZ_NAV"
 echo "    RViz mapping: $RVIZ_MAPPING"
 echo "    Headless:     $HEADLESS"
 echo "    Map YAML:     $MAP_YAML"
-echo "    Extra args:   ${RLAI_EXTRA_ARGS:-none}"
+echo "    Extra args:   ${ATLAS_EXTRA_ARGS:-none}"
 exec docker compose -f "$WS_ROOT/docker/docker-compose.yml" up "${SERVICES[@]}"
