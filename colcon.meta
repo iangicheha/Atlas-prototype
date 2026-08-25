@@ -1,21 +1,21 @@
 {
   "names": {
-    "rlai_description": {
+    "atlas_description": {
       "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
     },
-    "rlai_meshes": {
+    "atlas_meshes": {
       "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
     },
-    "rlai_gazebo": {
+    "atlas_gazebo": {
       "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
     },
-    "rlai_control": {
+    "atlas_control": {
       "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
     },
-    "rlai_lidar_processing": {
+    "atlas_lidar_processing": {
       "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
     },
-    "rlai_camera_processing": {
+    "atlas_camera_processing": {
       "cmake-args": ["-DCMAKE_BUILD_TYPE=Release"]
     }
   }

@@ -5,11 +5,11 @@ import xml.etree.ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GAZEBO = ROOT / "src/simulation/rlai_gazebo"
+GAZEBO = ROOT / "src/simulation/atlas_gazebo"
 MODELS = GAZEBO / "models"
 WORLDS = GAZEBO / "worlds"
 GAZEBO_LAUNCH = GAZEBO / "launch/gazebo.launch.py"
-BRINGUP_LAUNCH = ROOT / "src/bringup/rlai_bringup/launch/simulation.launch.py"
+BRINGUP_LAUNCH = ROOT / "src/bringup/atlas_bringup/launch/simulation.launch.py"
 
 EXPECTED_MODELS = {
     "warehouse_shelf",
