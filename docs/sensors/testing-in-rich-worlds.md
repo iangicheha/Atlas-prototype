@@ -1,4 +1,4 @@
-# Testing rbot Sensors in Rich Gazebo Worlds
+# Testing Atlas Sensors in Rich Gazebo Worlds
 
 Use rich worlds to validate that perception, localization, mapping, and navigation still work when the scene contains shelves, pallets, clutter, and narrow aisles.
 
@@ -7,7 +7,7 @@ Use rich worlds to validate that perception, localization, mapping, and navigati
 Start with the easy benchmark:
 
 ```bash
-ros2 launch rlai_bringup simulation.launch.py \
+ros2 launch atlas_bringup simulation.launch.py \
   world:=benchmark_warehouse_easy \
   mapping_enabled:=true
 ```

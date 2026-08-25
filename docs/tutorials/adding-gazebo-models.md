@@ -1,9 +1,9 @@
 # Adding Gazebo Models
 
-rbot stores official Gazebo models in:
+Atlas stores official Gazebo models in:
 
 ```text
-src/simulation/rlai_gazebo/models
+src/simulation/atlas_gazebo/models
 ```
 
 Each model must use this layout:

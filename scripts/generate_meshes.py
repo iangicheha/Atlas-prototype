@@ -2,7 +2,7 @@
 """
 generate_meshes.py
 ==================
-Programmatic STL mesh generator for the RLAI AMR robot body.
+Programmatic STL mesh generator for the ATLAS AMR robot body.
 
 All geometry is modelled in millimetres (mm).  The URDF applies
   scale="0.001 0.001 0.001"
@@ -20,7 +20,7 @@ Robot reference geometry  (from urdf/base/):
   │  Camera position   │  (250, 0, 130)              │  robot.urdf.xacro    │
   └────────────────────────────────────────────────────────────────────────┘
 
-Outputs  (src/robot/rlai_meshes/meshes/):
+Outputs  (src/robot/atlas_meshes/meshes/):
   chassis.stl    —  full chassis body with integrated sensor mounts
   wheel.stl      —  single wheel body (tyre, hub, spokes)
   wheel_cap.stl  —  cap discs only (separate mesh for per-colour URDF visual)
@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
 # ── Paths ─────────────────────────────────────────────────────────────────────
 SCRIPT_DIR = Path(__file__).resolve().parent          # .../scripts/
 REPO_ROOT  = SCRIPT_DIR.parent                        # workspace root
-MESH_DIR   = REPO_ROOT / "src/robot/rlai_meshes/meshes"
+MESH_DIR   = REPO_ROOT / "src/robot/atlas_meshes/meshes"
 
 # ── Export quality ─────────────────────────────────────────────────────────────
 LINEAR_TOL  = 5e-5   # 0.05 mm  → fine surface quality
@@ -199,14 +199,14 @@ PP_PLATE_FILLET =  10.0   # vertical-edge fillet (mm)
 # ║  LOGO ENGRAVING PARAMETERS                                                  ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 #
-# The rbot.svg logo is engraved 2 mm deep into both ±Y side walls of the
+# The atlas.svg logo is engraved 2 mm deep into both ±Y side walls of the
 # lower structural tray (z = 0..100 mm, wall at y = ±200 mm).
 #
 # SVG bounding box of text content (measured by sampling all paths):
 #   x ∈ [25.6, 476.2]  width  = 450.6 SVG units
 #   y ∈ [209.1, 282.8] height =  73.7 SVG units  (Y-down, includes descenders)
 
-LOGO_SVG       = str(SCRIPT_DIR / "rbot.svg")
+LOGO_SVG       = str(SCRIPT_DIR / "atlas.svg")
 LOGO_TARGET_W  = 380.0   # mm — desired text width on wall
 LOGO_DEPTH     =   2.0   # mm — engraving depth into wall
 LOGO_WALL_CZ   =  45.0   # mm — robot Z of logo centre (lower tray z=0..100)
@@ -359,7 +359,7 @@ def build_chassis() -> cq.Workplane:
 
 def _engrave_logo_walls(body: cq.Workplane) -> cq.Workplane:
     """
-    Engrave the rbot.svg logo 2 mm deep into both ±Y side walls of the
+    Engrave the atlas.svg logo 2 mm deep into both ±Y side walls of the
     chassis lower tray.
 
     Approach:
@@ -676,26 +676,6 @@ def _build_logo_inlay_mesh(path_indices: list) -> "cq.Workplane | None":
     return cq.Workplane().add(compound)
 
 
-def build_logo_robolabs() -> "cq.Workplane | None":
-    """Inlay mesh for 'robolabs' letters (SVG paths 0–7) — white material."""
-    return _build_logo_inlay_mesh(list(range(0, 8)))
-
-
-def build_logo_ai() -> "cq.Workplane | None":
-    """Inlay mesh for '.ai' letters (SVG paths 8–9) — green material."""
-    return _build_logo_inlay_mesh([8, 9])
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  DEPTH CAMERA MESHES  (Intel RealSense D435i, local link frame, mm)
-# ══════════════════════════════════════════════════════════════════════════════
-#
-# Coordinate convention (matches URDF joint orientation, rpy="0 0 0"):
-#   +X  forward  (points out of camera lens / toward scene)
-#   +Y  left     (camera width axis)
-#   +Z  up
-#   Front face of camera housing at local x = +CAM_D/2 = +12.5 mm
-#   Body centred at origin, so y ∈ [−45, +45], z ∈ [−12.5, +12.5]
 
 
 def build_depth_camera_housing() -> cq.Workplane:
@@ -937,7 +917,7 @@ def export_stl(workplane: cq.Workplane, name: str) -> None:
 def main() -> None:
     MESH_DIR.mkdir(parents=True, exist_ok=True)
 
-    log.info("━━━  RLAI Mesh Generator  ━━━")
+    log.info("━━━  ATLAS Mesh Generator  ━━━")
 
     log.info("Building chassis …")
     chassis = build_chassis()
@@ -954,30 +934,6 @@ def main() -> None:
     log.info("Building payload platform …")
     platform = build_payload_platform()
     export_stl(platform, "payload_platform.stl")
-
-    log.info("Building logo 'robolabs' inlay …")
-    logo_robolabs = build_logo_robolabs()
-    if logo_robolabs is not None:
-        export_stl(logo_robolabs, "logo_robolabs.stl")
-    else:
-        log.warning("logo_robolabs mesh is empty — skipped")
-
-    log.info("Building logo '.ai' inlay …")
-    logo_ai = build_logo_ai()
-    if logo_ai is not None:
-        export_stl(logo_ai, "logo_ai.stl")
-    else:
-        log.warning("logo_ai mesh is empty — skipped")
-
-    log.info("Building depth camera housing …")
-    cam_housing = build_depth_camera_housing()
-    export_stl(cam_housing, "depth_camera_housing.stl")
-
-    log.info("Building depth camera lens array …")
-    cam_lens = build_depth_camera_lens()
-    export_stl(cam_lens, "depth_camera_lens.stl")
-
-    log.info("Done — meshes written to %s", MESH_DIR)
 
 
 if __name__ == "__main__":

@@ -1,21 +1,21 @@
 # Using Custom Gazebo Worlds
 
-rbot ships bundled worlds in:
+Atlas ships bundled worlds in:
 
 ```text
-src/simulation/rlai_gazebo/worlds
+src/simulation/atlas_gazebo/worlds
 ```
 
 Run a bundled world by name:
 
 ```bash
-ros2 launch rlai_bringup simulation.launch.py world:=benchmark_warehouse_easy
+ros2 launch atlas_bringup simulation.launch.py world:=benchmark_warehouse_easy
 ```
 
 The launch file resolves this to:
 
 ```text
-rlai_gazebo/worlds/benchmark_warehouse_easy.sdf
+atlas_gazebo/worlds/benchmark_warehouse_easy.sdf
 ```
 
 ## Bundled scenario worlds
@@ -30,12 +30,12 @@ rlai_gazebo/worlds/benchmark_warehouse_easy.sdf
 Use an absolute path for the world and provide an extra model resource path when the world depends on external models:
 
 ```bash
-ros2 launch rlai_bringup simulation.launch.py \
+ros2 launch atlas_bringup simulation.launch.py \
   world:=/absolute/path/to/external_world.sdf \
   extra_gz_resource_path:=/absolute/path/to/external_models
 ```
 
-`extra_gz_resource_path` is appended to rbot's bundled Gazebo resource path, so local rbot models and external models can be used together.
+`extra_gz_resource_path` is appended to Atlas's bundled Gazebo resource path, so local Atlas models and external models can be used together.
 
 ## Docker wrapper
 
